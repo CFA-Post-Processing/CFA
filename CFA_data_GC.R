@@ -108,6 +108,8 @@ rm(abakus_colnames, col_names, dropList)
 
 #SELECT sample files from each list 
 #extract the dfs of interest (sample) from abakus list to manage them singularly
+#NB_original file '2021-04-14_130504.txt' has header to be removed 
+#to fix error given by chr type
 abakus_df_130504 <- as.data.frame(abakus_datalist[['2021-04-14_130504']])
 abakus_df_134809 <- as.data.frame(abakus_datalist[['2021-04-14_134809']])
 abakus_df_142819 <- as.data.frame(abakus_datalist[['2021-04-14_142819']])
@@ -116,7 +118,6 @@ abakus_df_130504 <- abakus_df_130504[-c(2506:2549), ]
 abakus_df_134809 <- abakus_df_134809[-c(2339:2360),]
 abakus_sample <- list(abakus_df_130504, abakus_df_134809, abakus_df_142819)
 names(abakus_sample) = c("2021-04-14_130504","2021-04-14_134809","2021-04-14_142819")
-
 rm(abakus_df_130504,abakus_df_134809,abakus_df_142819)
   
 conductivity_sample <- conductivity_datalist[names(conductivity_datalist) %in% c("2021-04-14_130504", 
@@ -175,16 +176,44 @@ flow_sample <- lapply(flow_sample,
 # sample_list <- list(abakus_sample, conductivity_sample, estens_sample, flow_sample)
 # names(sample_list) <- c("abakus", "conductivity", "draw_wire", "flowmeter")
 
+#The "datalists" contain all the data, but we need to manage only a subset of files
 rm(abakus_datalist, conductivity_datalist, drawwire_datalist, flowmeter_datalist)
 
 #----------------------------------------------------------------------------------------
 #SECOND PART: STATISTICS AND PLOTS
 #----------------------------------------------------------------------------------------
 #ABAKUS DATA: ~1 acq. per sec
+#---------------------------------
 #concatenate abakus files in a uniqe dataframe 
 ABAKUS <- do.call("rbind", abakus_sample)
 Index <- c(1:6038)
 ABAKUS[["Index"]] <- Index
+rm(abakus_sample, Index)
+
+#settings
+start_row_index <- 1 # first line of interest
+last_row_index <- length(ABAKUS$Index) # last line of interest
+start_column_index <- 3 # first channel of interest
+last_column_index <- length((ABAKUS)) #last channel of interest
+
+#Compute cumulative distribution
+cumulative_distribution <- colSums(ABAKUS[start_row_index:last_row_index,start_column_index:last_column_index])
+
+#Display cumulative distribution as barplot
+#Define size classes
+size_classes <- c(0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.9,3.2,
+                  3.5,3.9,4.3,4.8,5.3,5.8,6.4,7.1,7.8,8.6,9.5,10.5,11.6,12.8,
+                  14.1,15.5,80.0)
+
+barplot(cumulative_distribution,
+        names.arg = size_classes,
+        space = 0,
+        border = NA,
+        main = "Cumulative distribution",
+        ylab = "Counts",
+        xlab = expression(paste("Diameter (", mu, "m)")))
+
+#Compute differential distribution --------------
 
 
 #CONDUCTIVITY DATA: ~1 acq. per sec
