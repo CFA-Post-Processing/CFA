@@ -15,8 +15,6 @@ library(readr)
 library(dplyr) #necessary to create vector of data frame names from a list of data frames
 library(purrr) #necessary to create vector of data frame names from a list of data frames
 
-
-#REMEMBER TO UPDATE FOLDERS WITH NEW FILES!!!
 #set main wd
 setwd("C:/Users/azzur/Dropbox/Il mio PC (LAPTOP-AUDRMQN9)/Desktop/CFA_data/CFA_HPLC")
 
@@ -26,7 +24,7 @@ setwd("C:/Users/azzur/Dropbox/Il mio PC (LAPTOP-AUDRMQN9)/Desktop/CFA_data/CFA_H
 #in a list and repeat the same operations for each device
 
 setwd("C:/Users/azzur/Dropbox/Il mio PC (LAPTOP-AUDRMQN9)/Desktop/CFA_data/CFA_HPLC/abakus_data")
-abakus_files <- as.array(list.files(pattern = "*_dust.txt"))
+abakus_files <- as.array(list.files(pattern = ".txt"))
 abakus_datalist <- lapply(abakus_files, 
                           read.table, 
                           header=FALSE, 
@@ -34,7 +32,7 @@ abakus_datalist <- lapply(abakus_files,
                           sep="\t", skip = 6)
 
 setwd("C:/Users/azzur/Dropbox/Il mio PC (LAPTOP-AUDRMQN9)/Desktop/CFA_data/CFA_HPLC/cond_data")
-conductivity_files <- as.array(list.files(pattern = "*_cond.txt"))
+conductivity_files <- as.array(list.files(pattern = ".txt"))
 conductivity_datalist <- lapply(conductivity_files, function(x) {
   tryCatch(read.table(x, header = FALSE, sep = ' '), error=function(e) NULL)
 })
@@ -48,7 +46,7 @@ drawwire_datalist <- lapply(drawwire_files,
                                      sep="\t", skip = 6))
 
 setwd("C:/Users/azzur/Dropbox/Il mio PC (LAPTOP-AUDRMQN9)/Desktop/CFA_data/CFA_HPLC/flow_data")
-flowmeter_files <- as.array(list.files(pattern="*_flow.txt"))
+flowmeter_files <- as.array(list.files(pattern=".txt"))
 flowmeter_datalist <- lapply(flowmeter_files, 
                              tryCatch(read.table, 
                                       header=FALSE, 
@@ -80,8 +78,8 @@ abakus_colnames <- c("Index","Duration (s)","0,8","0,9","1,0","1,1","1,2","1,3",
 abakus_datalist <-  lapply(abakus_datalist, setNames, abakus_colnames)
 #delete the first row from each df in the list using numeric index
 abakus_datalist <-  lapply(abakus_datalist, function(x) {x <- x[-1, ]})
-#delete files with less than 10sec of acquisition (failed tests) from abakus list 
-abakus_datalist <- abakus_datalist[sapply(abakus_datalist, function(x) dim(x)[1]) > 10]
+#delete files with less than 200sec of acquisition (failed tests) from abakus list 
+abakus_datalist <- abakus_datalist[sapply(abakus_datalist, function(x) dim(x)[1]) > 200]
 
 #MANAGE CONDUCTIVITY DATA
 #delete unnecessary columns
@@ -89,16 +87,16 @@ dropList <- c("V4", "V5", "V6", "V7", "V8", "V10", "V11", "V12", "V13", "V14", "
 conductivity_datalist <- lapply(conductivity_datalist, function(x) { x[dropList] <- NULL; x })
 #delete dataframes with NULL dimension
 conductivity_datalist <- conductivity_datalist[lapply(conductivity_datalist,length)>0] 
-#delete files with less than 10sec of acquisition (failed tests) from conductivity list 
-conductivity_datalist <- conductivity_datalist[sapply(conductivity_datalist, function(x) dim(x)[1]) > 10]
+#delete files with less than 200sec of acquisition (failed tests) from conductivity list 
+conductivity_datalist <- conductivity_datalist[sapply(conductivity_datalist, function(x) dim(x)[1]) > 200]
 #rename columns for all df in the list 
 col_names <- c("Date","Time_%H:%M:%S", "SENSOR1(mS)", "SENSOR2(mS)", "SENSOR4(mS)")
 conductivity_datalist <-  lapply(conductivity_datalist, setNames, col_names)
 
 #MANAGE DRAW WIRE DATA
 #rename columns for all df in the list 
-#delete files with less than 10sec of acquisition (failed tests) from drawwire list 
-drawwire_datalist <- drawwire_datalist[sapply(drawwire_datalist, function(x) dim(x)[1]) > 10]
+#delete files with less than 200sec of acquisition (failed tests) from drawwire list 
+drawwire_datalist <- drawwire_datalist[sapply(drawwire_datalist, function(x) dim(x)[1]) > 200]
 col_names <- c("Date","Time_%H:%M:%S", "Ice Height (mm)", "Melt speed (mm/sec)")
 drawwire_datalist <-  lapply(drawwire_datalist, setNames, col_names)
 
@@ -106,10 +104,21 @@ drawwire_datalist <-  lapply(drawwire_datalist, setNames, col_names)
 col_names <- c("Date","Time_%H:%M:%S", "Flow (ul/min)")
 flowmeter_datalist <-  lapply(flowmeter_datalist, setNames, col_names)
 
-#SELECT sample files from each list using grepl function
-abakus_sample <- abakus_datalist[names(abakus_datalist) %in% c("2021-04-14_130504", 
-                                                               "2021-04-14_134809",
-                                                               "2021-04-14_142819")]
+rm(abakus_colnames, col_names, dropList)
+
+#SELECT sample files from each list 
+#extract the dfs of interest (sample) from abakus list to manage them singularly
+abakus_df_130504 <- as.data.frame(abakus_datalist[['2021-04-14_130504']])
+abakus_df_134809 <- as.data.frame(abakus_datalist[['2021-04-14_134809']])
+abakus_df_142819 <- as.data.frame(abakus_datalist[['2021-04-14_142819']])
+#remove empty rows from these dfs and finally create a new sublist
+abakus_df_130504 <- abakus_df_130504[-c(2506:2549), ]
+abakus_df_134809 <- abakus_df_134809[-c(2339:2360),]
+abakus_sample <- list(abakus_df_130504, abakus_df_134809, abakus_df_142819)
+names(abakus_sample) = c("2021-04-14_130504","2021-04-14_134809","2021-04-14_142819")
+
+rm(abakus_df_130504,abakus_df_134809,abakus_df_142819)
+  
 conductivity_sample <- conductivity_datalist[names(conductivity_datalist) %in% c("2021-04-14_130504", 
                                                                            "2021-04-14_134809",
                                                                            "2021-04-14_142819")]
@@ -163,16 +172,20 @@ flow_sample <- lapply(flow_sample,
 
 
 #CREATE A LIST WITH NESTED LISTS OF DATAFRAMES
-sample_list <- list(abakus_sample, conductivity_sample, estens_sample, flow_sample)
-names(sample_list) <- c("abakus", "conductivity", "draw_wire", "flowmeter")
+# sample_list <- list(abakus_sample, conductivity_sample, estens_sample, flow_sample)
+# names(sample_list) <- c("abakus", "conductivity", "draw_wire", "flowmeter")
 
-rm(abakus_colnames,col_names, dropList, abakus_sample, conductivity_sample, estens_sample, flow_sample)
+rm(abakus_datalist, conductivity_datalist, drawwire_datalist, flowmeter_datalist)
 
 #----------------------------------------------------------------------------------------
 #SECOND PART: STATISTICS AND PLOTS
 #----------------------------------------------------------------------------------------
-
 #ABAKUS DATA: ~1 acq. per sec
+#concatenate abakus files in a uniqe dataframe 
+ABAKUS <- do.call("rbind", abakus_sample)
+Index <- c(1:6038)
+ABAKUS[["Index"]] <- Index
+
 
 #CONDUCTIVITY DATA: ~1 acq. per sec
 
