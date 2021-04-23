@@ -229,10 +229,12 @@ for (i in seq(1,length(size_classes)-1)) {
 }
 
 diffDistr_Vol <- (4/3*pi*(vec_diameters_corr/2)^3)*diff(cumDistr)/(diff(log(size_classes)))
-plot(diffDistr_Vol, type="l", col="green",
-        main = "Differential distribution vol weighted",
-        ylab = "dV/dlog(d)",
-        xlab = "Channels")
+
+barplot(diffDistr_Vol, type="l", col="green",
+     main = "Differential distribution vol weighted",
+     ylab = "dV/dlog(d)",
+     xlab = expression(paste("Diameter (", mu, "m)")))
+
 
 
 #CONDUCTIVITY DATA: ~1 acq. per sec
