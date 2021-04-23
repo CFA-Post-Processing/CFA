@@ -198,6 +198,10 @@ last_column_index <- length((ABAKUS)) #last channel of interest
 
 #Tot counts per channel
 distr <- colSums(ABAKUS[start_row_index:last_row_index,start_column_index:last_column_index])
+#Define size classes
+size_classes <- c(0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.9,3.2,
+                  3.5,3.9,4.3,4.8,5.3,5.8,6.4,7.1,7.8,8.6,9.5,10.5,11.6,12.8,
+                  14.1,15.5,80.0)
 barplot(distr,
         names.arg = size_classes,
         space = 0,
@@ -210,15 +214,8 @@ barplot(distr,
 counts <- apply(ABAKUS[3:ncol(ABAKUS)],2,sum)
 cumDistr <- cumsum(counts)
 
-#Display cumulative distribution as barplot
-#Define size classes
-size_classes <- c(0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.9,3.2,
-                  3.5,3.9,4.3,4.8,5.3,5.8,6.4,7.1,7.8,8.6,9.5,10.5,11.6,12.8,
-                  14.1,15.5,80.0)
+#Display cumulative distribution 
 plot(cumDistr, type= "l", col="blue",
-        names.arg = size_classes,
-        space = 0,
-        border = NA,
         main = "Cumulative distribution",
         ylab = "Counts",
         xlab = "Channels")
@@ -236,7 +233,6 @@ plot(diffDistr, type="l", col="green",
         main = "Differential distribution",
         ylab = "Counts",
         xlab = "Channels")
-
 
 
 #CONDUCTIVITY DATA: ~1 acq. per sec
