@@ -196,24 +196,47 @@ last_row_index <- length(ABAKUS$Index) # last line of interest
 start_column_index <- 3 # first channel of interest
 last_column_index <- length((ABAKUS)) #last channel of interest
 
+#Tot counts per channel
+distr <- colSums(ABAKUS[start_row_index:last_row_index,start_column_index:last_column_index])
+barplot(distr,
+        names.arg = size_classes,
+        space = 0,
+        border = NA,
+        main = "Tot counts per channel",
+        ylab = "Counts",
+        xlab = expression(paste("Diameter (", mu, "m)")))
+
 #Compute cumulative distribution
-cumulative_distribution <- colSums(ABAKUS[start_row_index:last_row_index,start_column_index:last_column_index])
+counts <- apply(ABAKUS[3:ncol(ABAKUS)],2,sum)
+cumDistr <- cumsum(counts)
 
 #Display cumulative distribution as barplot
 #Define size classes
 size_classes <- c(0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.9,3.2,
                   3.5,3.9,4.3,4.8,5.3,5.8,6.4,7.1,7.8,8.6,9.5,10.5,11.6,12.8,
                   14.1,15.5,80.0)
-
-barplot(cumulative_distribution,
+plot(cumDistr, type= "l", col="blue",
         names.arg = size_classes,
         space = 0,
         border = NA,
         main = "Cumulative distribution",
         ylab = "Counts",
-        xlab = expression(paste("Diameter (", mu, "m)")))
+        xlab = "Channels")
 
-#Compute differential distribution --------------
+#Compute differential distribution --------------NON TORNA
+counts <- apply(ABAKUS[3:ncol(ABAKUS)],2,sum)
+vec_diameters_corr <- c(rep(0,31))
+
+for (i in seq(1,length(size_classes)-1)) {
+  vec_diameters_corr[i] <- mean(c(size_classes[i],size_classes[i+1])) 
+}
+
+diffDistr <- (4/3*pi*(vec_diameters_corr/2)^3)*diff(cumDistr)/(diff(log(size_classes)))
+plot(diffDistr, type="l", col="green",
+        main = "Differential distribution",
+        ylab = "Counts",
+        xlab = "Channels")
+
 
 
 #CONDUCTIVITY DATA: ~1 acq. per sec
