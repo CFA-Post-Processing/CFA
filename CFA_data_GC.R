@@ -230,9 +230,16 @@ for (i in seq(1,length(size_classes)-1)) {
 
 diffDistr_Vol <- (4/3*pi*(vec_diameters_corr/2)^3)*diff(cumDistr)/(diff(log(size_classes)))
 
-barplot(diffDistr_Vol, type="l", col="green",
-     main = "Differential distribution vol weighted",
+barplot(diffDistr_Vol, type="l", col="olivedrab1",
+     main = "Differential distribution (Vol)",
      ylab = "dV/dlog(d)",
+     xlab = expression(paste("Diameter (", mu, "m)")))
+
+#Compute differential distribution (Counts)
+CountsDiffDistr <-  diff(cumDistr)/diff(log(size_classes))
+barplot(CountsDiffDistr, type="l", col="pink",
+     main = "Differential distribution (Counts)",
+     ylab = "dN/dlog(d)",
      xlab = expression(paste("Diameter (", mu, "m)")))
 
 
