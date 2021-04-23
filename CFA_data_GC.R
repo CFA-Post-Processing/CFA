@@ -220,7 +220,7 @@ plot(cumDistr, type= "l", col="blue",
         ylab = "Counts",
         xlab = "Channels")
 
-#Compute differential distribution --------------NON TORNA
+#Compute differential distribution weighted by volume
 counts <- apply(ABAKUS[3:ncol(ABAKUS)],2,sum)
 vec_diameters_corr <- c(rep(0,31))
 
@@ -228,10 +228,10 @@ for (i in seq(1,length(size_classes)-1)) {
   vec_diameters_corr[i] <- mean(c(size_classes[i],size_classes[i+1])) 
 }
 
-diffDistr <- (4/3*pi*(vec_diameters_corr/2)^3)*diff(cumDistr)/(diff(log(size_classes)))
-plot(diffDistr, type="l", col="green",
-        main = "Differential distribution",
-        ylab = "Counts",
+diffDistr_Vol <- (4/3*pi*(vec_diameters_corr/2)^3)*diff(cumDistr)/(diff(log(size_classes)))
+plot(diffDistr_Vol, type="l", col="green",
+        main = "Differential distribution vol weighted",
+        ylab = "dV/dlog(d)",
         xlab = "Channels")
 
 
