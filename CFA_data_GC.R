@@ -317,6 +317,18 @@ barplot(BAG2_CountsDiffDistr, col=rgb(0, 1, 0, .8),
 box()
      
 #--------------------PLOTS_COMPARISON-------------------------------------------
+#Define a function for scientific notation 
+sciNotation <- function(x, digits = 1) {
+  if (length(x) > 1) {
+    return(append(sciNotation(x[1]), sciNotation(x[-1])))
+  }
+  if (!x) return(0)
+  exponent <- floor(log10(x))
+  base <- round(x / 10^exponent, digits)
+  as.expression(substitute(base %*% 10^exponent, 
+                           list(base = base, exponent = exponent)))
+}
+
 #CUMULATIVE DISTRIBUTIONS
 par(mar = c(4,4.5,2.5,4))      
 plot(BAG1_cumDistr, type= "l", col="blue",
@@ -326,9 +338,10 @@ plot(BAG1_cumDistr, type= "l", col="blue",
 par(new=TRUE)
 plot(BAG2_cumDistr, type= "l", col="green",
      axes = FALSE, xlab = "", ylab = "")
+     axis(4, at = axTicks(4), label = sciNotation(axTicks(4), 4))
      legend("bottomright", inset= .02, legend=c("BAG1", "BAG2"),
      col=c("blue","green"), lty=1:1, lwd=2, cex=0.8)
-
+     
 #DIFFERENTIAL DISTRIBUTIONS(Vol)
 plot(BAG1_diffDistr_Vol, type="l", col="blue",
         main = "Differential distribution (Vol)",
@@ -349,8 +362,120 @@ plot(BAG1_CountsDiffDistr, type="l", col="blue",
 par(new=TRUE)
 plot(BAG2_CountsDiffDistr, type="l", col="green",
      axes = FALSE, xlab = "", ylab = "")
-     axis(side = 4, at = pretty(range(BAG2_CountsDiffDistr)))     
+     axis(4, at = axTicks(4), label = sciNotation(axTicks(4), 4))
+     #axis(side = 4, at = pretty(range(BAG2_CountsDiffDistr)))     
      legend("topright", inset= .02, legend=c("BAG1", "BAG2"),
      col=c("blue","green"), lty=1:1, lwd=2, cex=0.8)
+
+rm(B1_counts, B2_counts,BAG1_counts, BAG1_CountsDiffDistr, BAG1_cumDistr, 
+   BAG1_diffDistr_Vol, BAG1_distr, BAG1_last_column_index, BAG1_last_row_index, 
+   BAG1_start_column_index,BAG1_start_row_index, BAG2_counts, BAG2_cumDistr, 
+   BAG2_distr,BAG2_CountsDiffDistr, BAG2_diffDistr_Vol, BAG2_last_column_index, 
+   BAG2_last_row_index, BAG2_start_column_index,BAG2_start_row_index, i, 
+   size_classes, vec_diameters_corr)        
         
-        
+#-------------------------------------------------------------------------------
+#CONDUCTIVITY DATA: ~1 acq. per sec
+#-------------------------------------------------------------------------------
+#extract the dfs of interest (sample) from conductivity list to manage them singularly
+cond_df_130504 <- as.data.frame(conductivity_sample[['2021-04-14_130504']])
+cond_df_134809 <- as.data.frame(conductivity_sample[['2021-04-14_134809']])
+cond_df_142819 <- as.data.frame(conductivity_sample[['2021-04-14_142819']])
+#subset all the df, keep only specific timeframes 
+#130504: keep data from 15:24:03 (row 1116) to the end of df (15:47:39)
+file_130504 <- cond_df_130504[-c(1:1115), ]
+#134809: keep data from the begin (15:48:19) to 15:55:35 (row 431)
+file_134809_first <- cond_df_134809[-c(432:2327), ]
+#134809: keep data from 16:03:45 (row 914) to the end of df (16:27:38)
+file_134809_second <- cond_df_134809[-c(1:913), ]
+
+#BAG1: 130504 + 134809 (first) df subset
+bag1_files <- list(file_130504,file_134809_first)
+BAG1_cond <- do.call("rbind", bag1_files)
+rm(bag1_files)
+     
+#BAG2: 134809 (second) + 142819 (all!) df subset
+bag2_files <- list(file_134809_second, cond_df_142819)
+BAG2_cond <- do.call("rbind", bag2_files)
+rm(bag2_files)
+rm(cond_df_130504, cond_df_134809, cond_df_142819, conductivity_sample,
+   file_130504, file_134809_first, file_134809_second)
+
+#add a column index for simplicity
+BAG1_Index <- c(1:1828)
+BAG1_cond[["Index"]] <- BAG1_Index
+rm(BAG1_Index)
+
+BAG2_Index <- c(1:2595)  
+BAG2_cond[["Index"]] <- BAG2_Index
+rm(BAG2_Index)
+
+#ONLY sensor1 has a spike that need to be removed (not revealed by the other sensors!)
+BAG1_cond <- BAG1_cond[-c(1282), ]
+BAG2_cond <- BAG2_cond[-c(881), ]
+
+#DISPLAY CONDUCTIVITY DATA:
+plot(BAG1_cond$SENSOR1.mS. ~ BAG1_cond$Time_.H..M..S, ylim = c(0,0.05), type="l", 
+     main="BAG1: Conductivity", lwd=2,
+     xlab="Time (min)", ylab="Conductivity (mS)")
+lines(BAG1_cond$SENSOR2.mS. ~ BAG1_cond$Time_.H..M..S, col="red",lwd=2)
+lines(BAG1_cond$SENSOR4.mS. ~ BAG1_cond$Time_.H..M..S, col="blue",lwd=2)
+legend("topleft", legend=c("Sensor1: start", "Sensor2: HPLC", 
+                                       "Sensor4: FC_dust"),
+       col=c("black","red","blue"), lty=1:1, lwd=2, cex=0.8)
+
+plot(BAG2_cond$SENSOR1.mS. ~ BAG2_cond$Time_.H..M..S, ylim = c(0,0.05), type="l", 
+     main="BAG2: Conductivity", lwd=2,
+     xlab="Time (min)", ylab="Conductivity (mS)")
+lines(BAG2_cond$SENSOR2.mS. ~ BAG2_cond$Time_.H..M..S, col="red", lwd=2)
+lines(BAG2_cond$SENSOR4.mS. ~ BAG2_cond$Time_.H..M..S, col="blue", lwd=2)
+legend("topleft", legend=c("Sensor1: start", "Sensor2: HPLC", 
+                           "Sensor4: FC_dust"),
+       col=c("black","red","blue"), lty=1:1, lwd=2, cex=0.8)
+
+
+#SMOOTH THE DATA AND FIND PEAKS, THEN COMPUTE THE DISTANCE AMONG SENSORS FOR EACH RUN. 
+#data smoothing via local polynomial regression (LOESS) 
+tmp.span <- 0.1
+B1s1 <- unlist(BAG1_cond[,3])
+B1s2 <- unlist(BAG1_cond[,4])
+B1s4 <- unlist(BAG1_cond[,5])
+#
+B2s1 <- unlist(BAG2_cond[,3])
+B2s2 <- unlist(BAG2_cond[,4])
+B2s4 <- unlist(BAG2_cond[,5])
+
+x1 <- BAG1_cond$Index
+x2 <- BAG2_cond$Index
+
+#BAG1 sensors: DATA SMOOTHING---------------------------------------------------
+BAG1_cond1 <- loess(B1s1 ~ x1, span=tmp.span)$fitted
+BAG1_cond2 <- loess(B1s2 ~ x1, span=tmp.span)$fitted
+BAG1_cond4 <- loess(B1s4 ~ x1, span=tmp.span)$fitted
+#smoothing plots BAG1: sensor1, sensor2, sensor4
+plot(x1, BAG1_cond1, type = 'l', main="BAG1: CONDUCTIVITY SMOOTHING", xlab="run(sec)", 
+     ylim = c(0,0.030), col="gray48")
+lines(x1, BAG1_cond2, type = 'l', col="firebrick1")
+lines(x1, BAG1_cond4, type = 'l', col="deepskyblue")
+legend("topright", legend=c("Sensor1: start", "Sensor2: HPLC", 
+                           "Sensor4: FC_dust"),
+       col=c("gray48","firebrick1","deepskyblue"), lty=1:1, lwd=2, cex=0.5)
+   
+#BAG2 sensors: DATA SMOOTHING---------------------------------------------------
+BAG2_cond1 <- loess(B2s1 ~ x2, span=tmp.span)$fitted
+BAG2_cond2 <- loess(B2s2 ~ x2, span=tmp.span)$fitted
+BAG2_cond4 <- loess(B2s4 ~ x2, span=tmp.span)$fitted
+#smoothing plots BAG1: sensor1, sensor2, sensor4
+plot(x2, BAG2_cond1, type = 'l', main="BAG2: CONDUCTIVITY SMOOTHING", xlab="run(sec)", 
+     ylim = c(0,0.030),col="gray48")
+lines(x2, BAG2_cond2, type = 'l', col="firebrick1")
+lines(x2, BAG2_cond4, type = 'l', col="deepskyblue")     
+legend("topleft", legend=c("Sensor1: start", "Sensor2: HPLC", 
+                            "Sensor4: FC_dust"),
+       col=c("gray48","firebrick1","deepskyblue"), lty=1:1, lwd=2, cex=0.6)     
+     
+#-------------------------------------------------------------------------------
+#DRAW WIRE DATA: ~1 acq. per 50 msec
+#compute mean melting speed with error
+     
+#FLOWMETER DATA: ~1 acq. per 50 msec
