@@ -316,3 +316,41 @@ barplot(BAG2_CountsDiffDistr, col=rgb(0, 1, 0, .8),
  xlab = expression(paste("Diameter (", mu, "m)")))
 box()
      
+#--------------------PLOTS_COMPARISON-------------------------------------------
+#CUMULATIVE DISTRIBUTIONS
+par(mar = c(4,4.5,2.5,4))      
+plot(BAG1_cumDistr, type= "l", col="blue",
+     main = "Cumulative distribution",
+     ylab = "Counts",
+     xlab = "Channels")
+par(new=TRUE)
+plot(BAG2_cumDistr, type= "l", col="green",
+     axes = FALSE, xlab = "", ylab = "")
+     legend("bottomright", inset= .02, legend=c("BAG1", "BAG2"),
+     col=c("blue","green"), lty=1:1, lwd=2, cex=0.8)
+
+#DIFFERENTIAL DISTRIBUTIONS(Vol)
+plot(BAG1_diffDistr_Vol, type="l", col="blue",
+        main = "Differential distribution (Vol)",
+        ylab = "dV/dlog(d)",
+        xlab = "Channels")
+par(new=TRUE)
+plot(BAG2_diffDistr_Vol, type="l", col="green",
+        axes = FALSE, xlab = "", ylab = "")
+        axis(side = 4, at = pretty(range(BAG2_diffDistr_Vol)))     
+        legend("topleft", inset= .02, legend=c("BAG1", "BAG2"),
+        col=c("blue","green"), lty=1:1, lwd=2, cex=0.8)
+        
+#DIFFERENTIAL DISTRIBUTIONS(Counts)
+plot(BAG1_CountsDiffDistr, type="l", col="blue",
+     main = "Differential distribution (Counts)",
+     ylab = "dN/dlog(d)",
+     xlab = "Channels")
+par(new=TRUE)
+plot(BAG2_CountsDiffDistr, type="l", col="green",
+     axes = FALSE, xlab = "", ylab = "")
+     axis(side = 4, at = pretty(range(BAG2_CountsDiffDistr)))     
+     legend("topright", inset= .02, legend=c("BAG1", "BAG2"),
+     col=c("blue","green"), lty=1:1, lwd=2, cex=0.8)
+        
+        
