@@ -414,26 +414,6 @@ rm(BAG2_Index)
 BAG1_cond <- BAG1_cond[-c(1282), ]
 BAG2_cond <- BAG2_cond[-c(881), ]
 
-#DISPLAY CONDUCTIVITY DATA:
-plot(BAG1_cond$SENSOR1.mS. ~ BAG1_cond$Time_.H..M..S, ylim = c(0,0.05), type="l", 
-     main="BAG1: Conductivity", lwd=2,
-     xlab="Time (min)", ylab="Conductivity (mS)")
-lines(BAG1_cond$SENSOR2.mS. ~ BAG1_cond$Time_.H..M..S, col="red",lwd=2)
-lines(BAG1_cond$SENSOR4.mS. ~ BAG1_cond$Time_.H..M..S, col="blue",lwd=2)
-legend("topleft", legend=c("Sensor1: start", "Sensor2: HPLC", 
-                                       "Sensor4: FC_dust"),
-       col=c("black","red","blue"), lty=1:1, lwd=2, cex=0.8)
-
-plot(BAG2_cond$SENSOR1.mS. ~ BAG2_cond$Time_.H..M..S, ylim = c(0,0.05), type="l", 
-     main="BAG2: Conductivity", lwd=2,
-     xlab="Time (min)", ylab="Conductivity (mS)")
-lines(BAG2_cond$SENSOR2.mS. ~ BAG2_cond$Time_.H..M..S, col="red", lwd=2)
-lines(BAG2_cond$SENSOR4.mS. ~ BAG2_cond$Time_.H..M..S, col="blue", lwd=2)
-legend("topleft", legend=c("Sensor1: start", "Sensor2: HPLC", 
-                           "Sensor4: FC_dust"),
-       col=c("black","red","blue"), lty=1:1, lwd=2, cex=0.8)
-
-
 #SMOOTH THE DATA AND FIND PEAKS, THEN COMPUTE THE DISTANCE AMONG SENSORS FOR EACH RUN. 
 #data smoothing via local polynomial regression (LOESS) 
 tmp.span <- 0.1
@@ -452,28 +432,50 @@ x2 <- BAG2_cond$Index
 BAG1_cond1 <- loess(B1s1 ~ x1, span=tmp.span)$fitted
 BAG1_cond2 <- loess(B1s2 ~ x1, span=tmp.span)$fitted
 BAG1_cond4 <- loess(B1s4 ~ x1, span=tmp.span)$fitted
-#smoothing plots BAG1: sensor1, sensor2, sensor4
-plot(x1, BAG1_cond1, type = 'l', main="BAG1: CONDUCTIVITY SMOOTHING", xlab="run(sec)", 
-     ylim = c(0,0.030), col="gray48")
-lines(x1, BAG1_cond2, type = 'l', col="firebrick1")
-lines(x1, BAG1_cond4, type = 'l', col="deepskyblue")
-legend("topright", legend=c("Sensor1: start", "Sensor2: HPLC", 
-                           "Sensor4: FC_dust"),
-       col=c("gray48","firebrick1","deepskyblue"), lty=1:1, lwd=2, cex=0.5)
-   
+
+#PLOTS: BAG1 with sensor1, sensor2, sensor4
+plot(BAG1_cond$SENSOR1.mS. ~ BAG1_cond$Index , ylim = c(0,0.05), 
+     type="l", main="BAG1: CONDUCTIVITY DATA", xlab="Time(sec)", ylab="conductivity (ms)")
+lines(BAG1_cond$SENSOR2.mS. ~ BAG1_cond$Index, col="red")
+lines(BAG1_cond$SENSOR4.mS. ~ BAG1_cond$Index, col="blue")
+legend("topleft", inset=.01, legend=c("RAW_Sensor1: start", 
+                                      "RAW_Sensor2: HPLC", "RAW_Sensor4: FC_dust"),
+       col=c("black","red","blue"), lty=1, lwd=1, bty = "n", cex=0.6)
+
+par(new=TRUE) 
+
+plot(x1, BAG1_cond1, type = 'l', lty=2, ylim = c(0,0.05), col="gray", lwd=3,
+     axes = FALSE, xlab = "", ylab = "")
+lines(x1, BAG1_cond2, type = 'l', lty=2, col="tomato", lwd=3)
+lines(x1, BAG1_cond4, type = 'l', lty=2, col="deepskyblue", lwd=3)
+legend("topright", inset=c(-0.3,0), legend=c("SMOOTHED_Sensor1: start", "SMOOTHED_Sensor2: HPLC",
+                                             "SMOOTHED_Sensor4: FC_dust"),
+       col=c("gray","tomato","deepskyblue"), 
+       lty=2, lwd=2, bty = "n", cex=0.6)
+
 #BAG2 sensors: DATA SMOOTHING---------------------------------------------------
 BAG2_cond1 <- loess(B2s1 ~ x2, span=tmp.span)$fitted
 BAG2_cond2 <- loess(B2s2 ~ x2, span=tmp.span)$fitted
 BAG2_cond4 <- loess(B2s4 ~ x2, span=tmp.span)$fitted
-#smoothing plots BAG1: sensor1, sensor2, sensor4
-plot(x2, BAG2_cond1, type = 'l', main="BAG2: CONDUCTIVITY SMOOTHING", xlab="run(sec)", 
-     ylim = c(0,0.030),col="gray48")
-lines(x2, BAG2_cond2, type = 'l', col="firebrick1")
-lines(x2, BAG2_cond4, type = 'l', col="deepskyblue")     
-legend("topleft", legend=c("Sensor1: start", "Sensor2: HPLC", 
-                            "Sensor4: FC_dust"),
-       col=c("gray48","firebrick1","deepskyblue"), lty=1:1, lwd=2, cex=0.6)     
-     
+#PLOTS: BAG2 with sensor1, sensor2, sensor4
+plot(BAG2_cond$SENSOR1.mS. ~ BAG2_cond$Index, ylim = c(0,0.05), 
+     type="l", main="BAG2: CONDUCTIVITY DATA", xlab="Time(sec)", ylab="conductivity (ms)")
+lines(BAG2_cond$SENSOR2.mS. ~ BAG2_cond$Index, col="red")
+lines(BAG2_cond$SENSOR4.mS. ~ BAG2_cond$Index, col="blue")
+legend("topleft", inset=.01, legend=c("RAW_Sensor1: start", 
+                                      "RAW_Sensor2: HPLC", "RAW_Sensor4: FC_dust"),
+       col=c("black","red","blue"), lty=1, lwd=1, bty = "n", cex=0.6)
+
+par(new=TRUE) 
+
+plot(x2, BAG2_cond1, type = 'l', lty=2, ylim = c(0,0.05), col="gray", lwd=3,
+     axes = FALSE, xlab = "", ylab = "")
+lines(x2, BAG2_cond2, type = 'l', lty=2, col="tomato", lwd=3)
+lines(x2, BAG2_cond4, type = 'l', lty=2, col="deepskyblue", lwd=3)
+legend("topright", inset=c(-0.3,0), legend=c("SMOOTHED_Sensor1: start", "SMOOTHED_Sensor2: HPLC",
+                                             "SMOOTHED_Sensor4: FC_dust"),
+       col=c("gray","tomato","deepskyblue"), 
+       lty=2, lwd=2, bty = "n", cex=0.6)
 #-------------------------------------------------------------------------------
 #DRAW WIRE DATA: ~1 acq. per 50 msec
 #compute mean melting speed with error
