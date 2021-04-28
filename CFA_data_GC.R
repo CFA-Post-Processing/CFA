@@ -434,7 +434,7 @@ BAG1_cond2 <- loess(B1s2 ~ x1, span=tmp.span)$fitted
 BAG1_cond4 <- loess(B1s4 ~ x1, span=tmp.span)$fitted
 
 #PLOTS: BAG1 with sensor1, sensor2, sensor4
-plot(BAG1_cond$SENSOR1.mS. ~ BAG1_cond$Index , ylim = c(0,0.05), 
+plot(BAG1_cond$SENSOR1.mS. ~ BAG1_cond$Index , ylim = c(0,0.04), 
      type="l", main="BAG1: CONDUCTIVITY DATA", xlab="Time(sec)", ylab="conductivity (ms)")
 lines(BAG1_cond$SENSOR2.mS. ~ BAG1_cond$Index, col="red")
 lines(BAG1_cond$SENSOR4.mS. ~ BAG1_cond$Index, col="blue")
@@ -444,7 +444,7 @@ legend("topleft", inset=.01, legend=c("RAW_Sensor1: start",
 
 par(new=TRUE) 
 
-plot(x1, BAG1_cond1, type = 'l', lty=2, ylim = c(0,0.05), col="gray", lwd=3,
+plot(x1, BAG1_cond1, type = 'l', lty=2, ylim = c(0,0.04), col="gray", lwd=3,
      axes = FALSE, xlab = "", ylab = "")
 lines(x1, BAG1_cond2, type = 'l', lty=2, col="tomato", lwd=3)
 lines(x1, BAG1_cond4, type = 'l', lty=2, col="deepskyblue", lwd=3)
@@ -458,7 +458,7 @@ BAG2_cond1 <- loess(B2s1 ~ x2, span=tmp.span)$fitted
 BAG2_cond2 <- loess(B2s2 ~ x2, span=tmp.span)$fitted
 BAG2_cond4 <- loess(B2s4 ~ x2, span=tmp.span)$fitted
 #PLOTS: BAG2 with sensor1, sensor2, sensor4
-plot(BAG2_cond$SENSOR1.mS. ~ BAG2_cond$Index, ylim = c(0,0.05), 
+plot(BAG2_cond$SENSOR1.mS. ~ BAG2_cond$Index, ylim = c(0,0.04), 
      type="l", main="BAG2: CONDUCTIVITY DATA", xlab="Time(sec)", ylab="conductivity (ms)")
 lines(BAG2_cond$SENSOR2.mS. ~ BAG2_cond$Index, col="red")
 lines(BAG2_cond$SENSOR4.mS. ~ BAG2_cond$Index, col="blue")
@@ -468,7 +468,7 @@ legend("topleft", inset=.01, legend=c("RAW_Sensor1: start",
 
 par(new=TRUE) 
 
-plot(x2, BAG2_cond1, type = 'l', lty=2, ylim = c(0,0.05), col="gray", lwd=3,
+plot(x2, BAG2_cond1, type = 'l', lty=2, ylim = c(0,0.04), col="gray", lwd=3,
      axes = FALSE, xlab = "", ylab = "")
 lines(x2, BAG2_cond2, type = 'l', lty=2, col="tomato", lwd=3)
 lines(x2, BAG2_cond4, type = 'l', lty=2, col="deepskyblue", lwd=3)
@@ -476,6 +476,69 @@ legend("topright", inset=c(-0.3,0), legend=c("SMOOTHED_Sensor1: start", "SMOOTHE
                                              "SMOOTHED_Sensor4: FC_dust"),
        col=c("gray","tomato","deepskyblue"), 
        lty=2, lwd=2, bty = "n", cex=0.6)
+
+#-------------------------------------------------------------------------------
+#FOCUS ON SMOOTHED DATA: PLOT GRAPHS, SELECT PEAKS' AREAS AND FIND THE DELAYS
+
+plot(x2, BAG2_cond1, type = 'l', lty=1, ylim = c(0,0.04), col="gray", lwd=3,
+     main="BAG2:SENS1 SMOOTHED DATA", xlab="Time(sec)", ylab="conductivity (ms)")
+# lines(x1, BAG1_cond2, type = 'l', lty=2, col="tomato", lwd=3)
+# lines(x1, BAG1_cond4, type = 'l', lty=2, col="deepskyblue", lwd=3)
+legend("topright", inset=c(-0.3,0), legend=c("SMOOTHED_Sensor1: start"),
+       col=c("gray"), 
+       lty=1, lwd=3, bty = "n", cex=0.6)
+
+# plot(x2, BAG2_cond1, type = 'l', lty=2, ylim = c(0,0.04), col="gray", lwd=3,
+#      main="BAG2: CONDUCTIVITY DATA", xlab="Time(sec)", ylab="conductivity (ms)")
+# lines(x2, BAG2_cond2, type = 'l', lty=2, col="tomato", lwd=3)
+# lines(x2, BAG2_cond4, type = 'l', lty=2, col="deepskyblue", lwd=3)
+# legend("topright", inset=c(-0.3,0), legend=c("SMOOTHED_Sensor1: start", "SMOOTHED_Sensor2: HPLC",
+#                                              "SMOOTHED_Sensor4: FC_dust"),
+#        col=c("gray","tomato","deepskyblue"), 
+#        lty=2, lwd=2, bty = "n", cex=0.6)
+
+rm(B1s1, B1s2, B1s4, B2s1, B2s2, B2s4)
+
+#AREA UNDER THE CURVE-BAG2------------------------------------------------------
+#consider only BAG2 !!!
+#transform conductivity vectors for each sensor of BAG2 in df
+BAG2_cond1_smooth <- as.data.frame(BAG2_cond1)
+#BAG2_cond2_smooth <- as.data.frame(BAG2_cond2)
+#BAG2_cond4_smooth <- as.data.frame(BAG2_cond4)
+
+#add index to df for BAG2:sens1 smoothed data   
+BAG2_Index <- c(1:2594)
+BAG2_cond1_smooth[["Index"]] <- BAG2_Index
+
+#normalize smoothed values (BAG2)
+bag2_s1_norm <- (BAG2_cond1_smooth$BAG2_cond1 - min(BAG2_cond1_smooth$BAG2_cond1)) / (max(BAG2_cond1_smooth$BAG2_cond1) - min(BAG2_cond1_smooth$BAG2_cond1))
+#find change points with cpt.mean function
+bag2_s1_norm_cpt = cpt.mean(bag2_s1_norm, penalty = "Manual", method = "PELT", pen.value = 1 )
+
+#set start points and end points for sensor1 (data smoothed from BAG2)
+bag2_s1_start_1 <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[2]]
+bag2_s1_end_1   <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[3]]
+
+bag2_s1_start_2 <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[4]]
+bag2_s1_end_2   <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[5]]
+
+bag2_s1_start_3 <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[6]]
+bag2_s1_end_3   <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[7]]
+
+bag2_s1_start_4 <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[8]]
+bag2_s1_end_4   <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[9]]
+
+dumb_smooth <- 30
+bag2_sub_peak1 <- BAG2_cond1_smooth[which(BAG2_cond1_smooth$Index >= (bag2_s1_start_1 - dumb_smooth) & BAG2_cond1_smooth$Index <= (bag2_s1_end_1 + dumb_smooth)),]
+bag2_sub_peak2 <- BAG2_cond1_smooth[which(BAG2_cond1_smooth$Index >= (bag2_s1_start_2 - dumb_smooth) & BAG2_cond1_smooth$Index <= (bag2_s1_end_2 + dumb_smooth)),]
+bag2_sub_peak3 <- BAG2_cond1_smooth[which(BAG2_cond1_smooth$Index >= (bag2_s1_start_3 - dumb_smooth) & BAG2_cond1_smooth$Index <= (bag2_s1_end_3 + dumb_smooth)),]
+bag2_sub_peak4 <- BAG2_cond1_smooth[which(BAG2_cond1_smooth$Index >= (bag2_s1_start_4 - dumb_smooth) & BAG2_cond1_smooth$Index <= (bag2_s1_end_4 + dumb_smooth)),]
+
+polygon(x = c(bag2_sub_peak1$Index, rev(bag2_sub_peak1$Index)), y = c(bag2_sub_peak1$BAG2_cond1, rep(0,length(bag2_sub_peak1$BAG2_cond1))), col="grey")
+polygon(x = c(bag2_sub_peak2$Index, rev(bag2_sub_peak2$Index)), y = c(bag2_sub_peak2$BAG2_cond1, rep(0,length(bag2_sub_peak2$BAG2_cond1))), col="grey")
+polygon(x = c(bag2_sub_peak3$Index, rev(bag2_sub_peak3$Index)), y = c(bag2_sub_peak3$BAG2_cond1, rep(0,length(bag2_sub_peak3$BAG2_cond1))), col="grey")
+polygon(x = c(bag2_sub_peak4$Index, rev(bag2_sub_peak4$Index)), y = c(bag2_sub_peak4$BAG2_cond1, rep(0,length(bag2_sub_peak4$BAG2_cond1))), col="grey")
+
 #-------------------------------------------------------------------------------
 #DRAW WIRE DATA: ~1 acq. per 50 msec
 #compute mean melting speed with error
