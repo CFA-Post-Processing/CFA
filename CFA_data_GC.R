@@ -501,19 +501,29 @@ rm(B1s1, B1s2, B1s4, B2s1, B2s2, B2s4)
 
 #AREA UNDER THE CURVE-BAG2------------------------------------------------------
 #consider only BAG2 !!!
+#SENSOR1-------------------
 #transform conductivity vectors for each sensor of BAG2 in df
 BAG2_cond1_smooth <- as.data.frame(BAG2_cond1)
-#BAG2_cond2_smooth <- as.data.frame(BAG2_cond2)
-#BAG2_cond4_smooth <- as.data.frame(BAG2_cond4)
+BAG2_cond2_smooth <- as.data.frame(BAG2_cond2)
+BAG2_cond4_smooth <- as.data.frame(BAG2_cond4)
 
 #add index to df for BAG2:sens1 smoothed data   
 BAG2_Index <- c(1:2594)
 BAG2_cond1_smooth[["Index"]] <- BAG2_Index
+#
+BAG2_cond2_smooth[["Index"]] <- BAG2_Index
+#
+BAG2_cond4_smooth[["Index"]] <- BAG2_Index
 
 #normalize smoothed values (BAG2)
 bag2_s1_norm <- (BAG2_cond1_smooth$BAG2_cond1 - min(BAG2_cond1_smooth$BAG2_cond1)) / (max(BAG2_cond1_smooth$BAG2_cond1) - min(BAG2_cond1_smooth$BAG2_cond1))
+bag2_s2_norm <- (BAG2_cond2_smooth$BAG2_cond2 - min(BAG2_cond2_smooth$BAG2_cond2)) / (max(BAG2_cond2_smooth$BAG2_cond2) - min(BAG2_cond2_smooth$BAG2_cond2))
+bag2_s4_norm <- (BAG2_cond4_smooth$BAG2_cond4 - min(BAG2_cond4_smooth$BAG2_cond4)) / (max(BAG2_cond4_smooth$BAG2_cond4) - min(BAG2_cond4_smooth$BAG2_cond4))
+
 #find change points with cpt.mean function
 bag2_s1_norm_cpt = cpt.mean(bag2_s1_norm, penalty = "Manual", method = "PELT", pen.value = 1 )
+bag2_s2_norm_cpt = cpt.mean(bag2_s2_norm, penalty = "Manual", method = "PELT", pen.value = 1 )
+bag2_s4_norm_cpt = cpt.mean(bag2_s4_norm, penalty = "Manual", method = "PELT", pen.value = 1 )
 
 #set start points and end points for sensor1 (data smoothed from BAG2)
 bag2_s1_start_1 <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[2]]
@@ -538,6 +548,79 @@ polygon(x = c(bag2_sub_peak1$Index, rev(bag2_sub_peak1$Index)), y = c(bag2_sub_p
 polygon(x = c(bag2_sub_peak2$Index, rev(bag2_sub_peak2$Index)), y = c(bag2_sub_peak2$BAG2_cond1, rep(0,length(bag2_sub_peak2$BAG2_cond1))), col="grey")
 polygon(x = c(bag2_sub_peak3$Index, rev(bag2_sub_peak3$Index)), y = c(bag2_sub_peak3$BAG2_cond1, rep(0,length(bag2_sub_peak3$BAG2_cond1))), col="grey")
 polygon(x = c(bag2_sub_peak4$Index, rev(bag2_sub_peak4$Index)), y = c(bag2_sub_peak4$BAG2_cond1, rep(0,length(bag2_sub_peak4$BAG2_cond1))), col="grey")
+
+#
+#areas under the Curve for each of the selected peaks
+sub_peak1_area <- AUC(bag2_sub_peak1$Index, bag2_sub_peak1$BAG2_cond1)
+sub_peak2_area <- AUC(bag2_sub_peak2$Index, bag2_sub_peak2$BAG2_cond1)
+sub_peak3_area <- AUC(bag2_sub_peak3$Index, bag2_sub_peak3$BAG2_cond1)
+sub_peak4_area <- AUC(bag2_sub_peak4$Index, bag2_sub_peak4$BAG2_cond1)
+
+#-------------------------------------------------------------------------------
+#SENSOR2-------------------
+#set start points and end points for sensor2 (data smoothed from BAG2)
+bag2_s2_start_1 <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[1]]
+bag2_s2_end_1   <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[3.5]]
+
+bag2_s2_start_2 <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[4]]
+bag2_s2_end_2   <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[6]]
+
+bag2_s2_start_3 <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[6]]
+bag2_s2_end_3   <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[7.5]]
+
+bag2_s2_start_4 <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[8]]
+bag2_s2_end_4   <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[10]]
+
+dumb_smooth <- 30
+bag2_sub_peak1 <- BAG2_cond2_smooth[which(BAG2_cond2_smooth$Index >= (bag2_s2_start_1 - dumb_smooth) & BAG2_cond2_smooth$Index <= (bag2_s2_end_1 + dumb_smooth)),]
+bag2_sub_peak2 <- BAG2_cond2_smooth[which(BAG2_cond2_smooth$Index >= (bag2_s2_start_2 - dumb_smooth) & BAG2_cond2_smooth$Index <= (bag2_s2_end_2 + dumb_smooth)),]
+bag2_sub_peak3 <- BAG2_cond2_smooth[which(BAG2_cond2_smooth$Index >= (bag2_s2_start_3 - dumb_smooth) & BAG2_cond2_smooth$Index <= (bag2_s2_end_3 + dumb_smooth)),]
+bag2_sub_peak4 <- BAG2_cond2_smooth[which(BAG2_cond2_smooth$Index >= (bag2_s2_start_4 - dumb_smooth) & BAG2_cond2_smooth$Index <= (bag2_s2_end_4 + dumb_smooth)),]
+
+polygon(x = c(bag2_sub_peak1$Index, rev(bag2_sub_peak1$Index)), y = c(bag2_sub_peak1$BAG2_cond2, rep(0,length(bag2_sub_peak1$BAG2_cond2))), col="tomato")
+polygon(x = c(bag2_sub_peak2$Index, rev(bag2_sub_peak2$Index)), y = c(bag2_sub_peak2$BAG2_cond2, rep(0,length(bag2_sub_peak2$BAG2_cond2))), col="tomato")
+polygon(x = c(bag2_sub_peak3$Index, rev(bag2_sub_peak3$Index)), y = c(bag2_sub_peak3$BAG2_cond2, rep(0,length(bag2_sub_peak3$BAG2_cond2))), col="tomato")
+polygon(x = c(bag2_sub_peak4$Index, rev(bag2_sub_peak4$Index)), y = c(bag2_sub_peak4$BAG2_cond2, rep(0,length(bag2_sub_peak4$BAG2_cond2))), col="tomato")
+
+#
+#areas under the Curve for each of the selected peaks
+sub2_peak1_area <- AUC(bag2_sub_peak1$Index, bag2_sub_peak1$BAG2_cond2)
+sub2_peak2_area <- AUC(bag2_sub_peak2$Index, bag2_sub_peak2$BAG2_cond2)
+sub2_peak3_area <- AUC(bag2_sub_peak3$Index, bag2_sub_peak3$BAG2_cond2)
+sub2_peak4_area <- AUC(bag2_sub_peak4$Index, bag2_sub_peak4$BAG2_cond2)
+
+#-------------------------------------------------------------------------------
+#SENSOR4-------------------
+#set start points and end points for sensor4 (data smoothed from BAG2)
+bag2_s4_start_1 <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[2]]
+bag2_s4_end_1   <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[3]]
+
+bag2_s4_start_2 <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[4]]
+bag2_s4_end_2   <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[5]]
+
+bag2_s4_start_3 <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[6]]
+bag2_s4_end_3   <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[7]]
+
+bag2_s4_start_4 <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[8]]
+bag2_s4_end_4   <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[9]]
+
+dumb_smooth <- 30
+bag2_sub_peak1 <- BAG2_cond4_smooth[which(BAG2_cond4_smooth$Index >= (bag2_s4_start_1 - dumb_smooth) & BAG2_cond4_smooth$Index <= (bag2_s4_end_1 + dumb_smooth)),]
+bag2_sub_peak2 <- BAG2_cond4_smooth[which(BAG2_cond4_smooth$Index >= (bag2_s4_start_2 - dumb_smooth) & BAG2_cond4_smooth$Index <= (bag2_s4_end_2 + dumb_smooth)),]
+bag2_sub_peak3 <- BAG2_cond4_smooth[which(BAG2_cond4_smooth$Index >= (bag2_s4_start_3 - dumb_smooth) & BAG2_cond4_smooth$Index <= (bag2_s4_end_3 + dumb_smooth)),]
+bag2_sub_peak4 <- BAG2_cond4_smooth[which(BAG2_cond4_smooth$Index >= (bag2_s4_start_4 - dumb_smooth) & BAG2_cond4_smooth$Index <= (bag2_s4_end_4 + dumb_smooth)),]
+
+polygon(x = c(bag2_sub_peak1$Index, rev(bag2_sub_peak1$Index)), y = c(bag2_sub_peak1$BAG2_cond4, rep(0,length(bag2_sub_peak1$BAG2_cond4))), col="deepskyblue")
+polygon(x = c(bag2_sub_peak2$Index, rev(bag2_sub_peak2$Index)), y = c(bag2_sub_peak2$BAG2_cond4, rep(0,length(bag2_sub_peak2$BAG2_cond4))), col="deepskyblue")
+polygon(x = c(bag2_sub_peak3$Index, rev(bag2_sub_peak3$Index)), y = c(bag2_sub_peak3$BAG2_cond4, rep(0,length(bag2_sub_peak3$BAG2_cond4))), col="deepskyblue")
+polygon(x = c(bag2_sub_peak4$Index, rev(bag2_sub_peak4$Index)), y = c(bag2_sub_peak4$BAG2_cond4, rep(0,length(bag2_sub_peak4$BAG2_cond4))), col="deepskyblue")
+
+#
+#areas under the Curve for each of the selected peaks
+sub4_peak1_area <- AUC(bag2_sub_peak1$Index, bag2_sub_peak1$BAG2_cond4)
+sub4_peak2_area <- AUC(bag2_sub_peak2$Index, bag2_sub_peak2$BAG2_cond4)
+sub4_peak3_area <- AUC(bag2_sub_peak3$Index, bag2_sub_peak3$BAG2_cond4)
+sub4_peak4_area <- AUC(bag2_sub_peak4$Index, bag2_sub_peak4$BAG2_cond4)
 
 #-------------------------------------------------------------------------------
 #DRAW WIRE DATA: ~1 acq. per 50 msec
