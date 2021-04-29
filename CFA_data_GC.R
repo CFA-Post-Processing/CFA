@@ -526,7 +526,8 @@ legend("topleft", legend=c("SMOOTHED_Sensor1: start",
        col=c("gray","tomato","deepskyblue"), 
        lty=1, lwd=3, bty = "n", cex=0.6)
 
-rm(B1s1, B1s2, B1s4, B2s1, B2s2, B2s4)
+rm(B1s1, B1s2, B1s4, B2s1, B2s2, B2s4, BAG1_cond1,BAG1_cond2,BAG1_cond4,
+   BAG2_cond1,BAG2_cond2,BAG2_cond4,BAG2_Index,norm_Index,tmp.span, x1,x2)
 
 #set start points and end points for sensor1 (data smoothed from BAG2)
 bag2_s1_start_1 <- bag2_s1_norm$Index[bag2_s1_norm_cpt@cpts[2]]
@@ -629,34 +630,156 @@ peak2 <- c(sub_peak2_area,sub2_peak2_area,sub4_peak2_area)
 peak3 <- c(sub_peak3_area,sub2_peak3_area,sub4_peak3_area)
 peak4 <- c(sub_peak4_area,sub2_peak4_area,sub4_peak4_area)
 
-condSmooth_peakArea <- cbind(peak1, peak2, peak3, peak4)
-condSmooth_peakArea <- as.data.frame(condSmooth_peakArea)
+#Create a unique df for peaks' areas
+Cond_NormSmooth_peakArea <- cbind(peak1, peak2, peak3, peak4)
+Cond_NormSmooth_peakArea <- as.data.frame(Cond_NormSmooth_peakArea)
 
 conductivity <- c("sens1:start", "sens2:HPLC", "sens4:FC_dust")
-condSmooth_peakArea[["conductivity"]] <- conductivity
+Cond_NormSmooth_peakArea[["conductivity"]] <- conductivity
 
 #compute mean, std.dev, rsd% and add col to df
-Means <- rowMeans(condSmooth_peakArea[1:3, 1:4])
-condSmooth_peakArea[["Mean"]] <- Means
-condSmooth_peakArea <- condSmooth_peakArea %>% mutate(stDev = apply(.[(1:4)],1,sd))
-condSmooth_peakArea <- transform(condSmooth_peakArea, RSD = (stDev / Means)*100)
+Means <- rowMeans(Cond_NormSmooth_peakArea[1:3, 1:4])
+Cond_NormSmooth_peakArea[["Mean"]] <- Means
+Cond_NormSmooth_peakArea <- Cond_NormSmooth_peakArea %>% mutate(stDev = apply(.[(1:4)],1,sd))
+Cond_NormSmooth_peakArea <- transform(Cond_NormSmooth_peakArea, RSD = (stDev / Means)*100)
 
-rm(BAG1_cond1,BAG1_cond2,BAG1_cond4,BAG2_cond1,BAG2_cond2,BAG2_cond4,BAG2_Index,
-   bag2_s1_end_1,bag2_s1_end_2,bag2_s1_end_3,bag2_s1_end_4,bag2_s1_norm,
+#create a unique df for peaks values (normalized and smoothed)
+Cond_NormSmooth_peaks <- cbind(bag2_s1_norm$Index ,bag2_s1_norm$bag2_s1_norm,bag2_s2_norm$bag2_s2_norm,bag2_s4_norm$bag2_s4_norm)
+Cond_NormSmooth_peaks <- as.data.frame(Cond_NormSmooth_peaks)
+colname_cond <- c("Index","s1","s2","s4")
+Cond_NormSmooth_peaks <- setNames(Cond_NormSmooth_peaks, colname_cond)
+
+rm(bag2_s1_end_1,bag2_s1_end_2,bag2_s1_end_3,bag2_s1_end_4,
+   bag2_s2_end_1,bag2_s2_end_2,bag2_s2_end_3,bag2_s2_end_4,
+   bag2_s4_end_1,bag2_s4_end_2,bag2_s4_end_3,bag2_s4_end_4,
    bag2_s1_start_1,bag2_s1_start_2,bag2_s1_start_3,bag2_s1_start_4,
-   bag2_s2_end_1,bag2_s2_end_2,bag2_s2_end_3,bag2_s2_end_4,bag2_s2_norm,
    bag2_s2_start_1,bag2_s2_start_2,bag2_s2_start_3,bag2_s2_start_4,
-   bag2_s4_end_1,bag2_s4_end_2,bag2_s4_end_3,bag2_s4_end_4,bag2_s4_norm,
    bag2_s4_start_1,bag2_s4_start_2,bag2_s4_start_3,bag2_s4_start_4,
-   conductivity, dumb_smooth,peak1,peak2,peak3,peak4,
-   sub_peak1_area,sub_peak2_area,sub_peak3_area,sub_peak4_area,
-   sub2_peak1_area,sub2_peak2_area,sub2_peak4_area,
-   sub4_peak1_area,sub4_peak2_area,sub4_peak3_area,
-   tmp.span, x1,x2, sub2_peak3_area,sub4_peak4_area,
-   BAG2_cond1_smooth,BAG2_cond2_smooth,
-   BAG2_cond4_smooth,bag2_s1_norm_cpt,bag2_s2_norm_cpt,
-   bag2_s4_norm_cpt,   bag2_sub_peak1,bag2_sub_peak2,bag2_sub_peak3,bag2_sub_peak4)
+   colname_cond, conductivity, dumb_smooth, Means, peak1, peak2,peak3,peak4,
+   bag2_s1_norm, bag2_s2_norm,bag2_s4_norm)
 
+#FIND PEAKS HEIGHTS, applying a local filter to data (s1,s2,s4) 
+#Cond_NormSmooth_peaks: smoothed and normalized data
+
+# Parameters:
+# v:     a numeric vector where to search peaks.
+# delta: numeric of length one; defining the local threshold for peak detection.
+# x:     a numeric vector the same length as v containing corresponding x-values
+#        for v.
+# Value:
+# A list containing two data frames maxtab and mintab containing maxima and
+# minima. Data frames contain two columns with indices in v (or corresponding
+# values in x if provided) and values in v.
+peakdet <- function(v, delta, x = NULL)
+{
+  maxtab <- NULL
+  mintab <- NULL
+  
+  if (is.null(x))
+  {
+    x <- seq_along(v)
+  }
+  if (length(v) != length(x))
+  {
+    stop("Input vectors v and x must have the same length")
+  }
+  if (!is.numeric(delta))
+  {
+    stop("Input argument delta must be numeric")
+  }
+  if (delta <= 0)
+  {
+    stop("Input argument delta must be positive")
+  }
+  mn <- Inf
+  mx <- -Inf
+  mnpos <- NA
+  mxpos <- NA
+  lookformax <- TRUE
+  for(i in seq_along(v))
+  {
+    this <- v[i]
+    if (this > mx)
+    {
+      mx <- this
+      mxpos <- x[i]
+    }
+    if (this < mn)
+    {
+      mn <- this
+      mnpos <- x[i]
+    }
+    if (lookformax)
+    {
+      if (this < mx - delta)
+      {
+        maxtab <- rbind(maxtab, data.frame(pos = mxpos, val = mx))
+        mn <- this
+        mnpos <- x[i]
+        
+        lookformax <- FALSE
+      }
+    }
+    else
+    {
+      if (this > mn + delta)
+      {
+        mintab <- rbind(mintab, data.frame(pos = mnpos, val = mn))
+        mx <- this
+        mxpos <- x[i]
+        
+        lookformax <- TRUE
+      }
+    }
+  }
+  list(maxtab = maxtab, mintab = mintab)
+}
+
+s1 <- Cond_NormSmooth_peaks$s1
+vals <- sin(s1)
+H1 <- peakdet(vals, .15, Cond_NormSmooth_peaks$Index)
+
+s2 <- Cond_NormSmooth_peaks$s2
+vals <- sin(s2)
+H2 <-peakdet(vals, .1, Cond_NormSmooth_peaks$Index)
+
+s4 <- Cond_NormSmooth_peaks$s4
+vals <- sin(s4)
+H4 <-peakdet(vals, .1, Cond_NormSmooth_peaks$Index)
+
+peak_heights <- cbind(H1$maxtab,H2$maxtab,H4$maxtab)
+namesheights <- c("START:Time(sec)","s1 peaks","HPLC:Time(sec)","s2 peaks","FC:Time(sec)","s4 peaks")
+peak_heights <- setNames(peak_heights,namesheights)
+peak_heights$DELAY_hplc <- (peak_heights$`HPLC:Time(sec)` - peak_heights$`START:Time(sec)`)
+peak_heights$DELAY_fc <- (peak_heights$`FC:Time(sec)` - peak_heights$`START:Time(sec)`)
+delay_hplc <- peak_heights$DELAY_hplc 
+delay_fc <- peak_heights$DELAY_fc
+#statistics
+delay_hplc_mean <- mean(delay_hplc)
+delay_fc_mean <- mean(delay_fc)
+delay_hplc_stdev <- sd(delay_hplc)
+delay_fc_stdev <- sd(delay_fc)
+delay_hplc_rsd <- (delay_hplc_stdev/delay_hplc_mean)*100
+delay_fc_rsd <- (delay_fc_stdev/delay_fc_mean)*100
+  
+DELAYS_HPLC <- c(delay_hplc_mean,delay_hplc_stdev,delay_hplc_rsd)
+DELAYS_FC <- c(delay_fc_mean,delay_fc_stdev,delay_fc_rsd)
+DELAYS <- as.data.frame(cbind(DELAYS_HPLC,DELAYS_FC))
+stats <-c("mean","stdev","rsd")
+DELAYS[["stats"]] <- stats
+COLNAME <- c("DELAYS:start-hplc (sec)", "DELAYS:start-fc (sec)","stats")
+DELAYS <- setNames(DELAYS, COLNAME)
+
+
+rm(s1,s2,s4,vals, H1,H2,H4, delay_hplc, delay_fc, namesheights,DELAYS_HPLC,DELAYS_FC,
+   stats, COLNAME)
+
+rm(sub_peak1_area,sub_peak2_area,sub_peak3_area,sub_peak4_area,
+   sub2_peak1_area,sub2_peak2_area,sub2_peak3_area,sub2_peak4_area,
+   sub4_peak1_area,sub4_peak2_area,sub4_peak3_area,sub4_peak4_area,
+   BAG2_cond1_smooth,BAG2_cond2_smooth,BAG2_cond4_smooth,bag2_s1_norm_cpt,
+   bag2_s2_norm_cpt,bag2_s4_norm_cpt,bag2_sub_peak1,bag2_sub_peak2,bag2_sub_peak3,
+   bag2_sub_peak4)
 #-------------------------------------------------------------------------------
 #DRAW WIRE DATA: ~1 acq. per 50 msec
 #compute mean melting speed with error
