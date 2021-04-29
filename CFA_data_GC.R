@@ -477,28 +477,6 @@ legend("topright", inset=c(-0.3,0), legend=c("SMOOTHED_Sensor1: start", "SMOOTHE
        col=c("gray","tomato","deepskyblue"), 
        lty=2, lwd=2, bty = "n", cex=0.6)
 
-#-------------------------------------------------------------------------------
-#FOCUS ON SMOOTHED DATA: PLOT GRAPHS, SELECT PEAKS' AREAS AND FIND THE DELAYS
-
-plot(x2, BAG2_cond1, type = 'l', lty=1, ylim = c(0,0.04), col="gray", lwd=3,
-     main="BAG2:SENS1 SMOOTHED DATA", xlab="Time(sec)", ylab="conductivity (ms)")
-# lines(x1, BAG1_cond2, type = 'l', lty=2, col="tomato", lwd=3)
-# lines(x1, BAG1_cond4, type = 'l', lty=2, col="deepskyblue", lwd=3)
-legend("topright", inset=c(-0.3,0), legend=c("SMOOTHED_Sensor1: start"),
-       col=c("gray"), 
-       lty=1, lwd=3, bty = "n", cex=0.6)
-
-# plot(x2, BAG2_cond1, type = 'l', lty=2, ylim = c(0,0.04), col="gray", lwd=3,
-#      main="BAG2: CONDUCTIVITY DATA", xlab="Time(sec)", ylab="conductivity (ms)")
-# lines(x2, BAG2_cond2, type = 'l', lty=2, col="tomato", lwd=3)
-# lines(x2, BAG2_cond4, type = 'l', lty=2, col="deepskyblue", lwd=3)
-# legend("topright", inset=c(-0.3,0), legend=c("SMOOTHED_Sensor1: start", "SMOOTHED_Sensor2: HPLC",
-#                                              "SMOOTHED_Sensor4: FC_dust"),
-#        col=c("gray","tomato","deepskyblue"), 
-#        lty=2, lwd=2, bty = "n", cex=0.6)
-
-rm(B1s1, B1s2, B1s4, B2s1, B2s2, B2s4)
-
 #AREA UNDER THE CURVE-BAG2------------------------------------------------------
 #consider only BAG2 !!!
 #SENSOR1-------------------
@@ -525,102 +503,159 @@ bag2_s1_norm_cpt = cpt.mean(bag2_s1_norm, penalty = "Manual", method = "PELT", p
 bag2_s2_norm_cpt = cpt.mean(bag2_s2_norm, penalty = "Manual", method = "PELT", pen.value = 1 )
 bag2_s4_norm_cpt = cpt.mean(bag2_s4_norm, penalty = "Manual", method = "PELT", pen.value = 1 )
 
+#transform normalized smoothed values in df (cannot do it before, otherwise they are
+#saved as formal classes -if you do it all in one step- and change points function
+#does not work)
+bag2_s1_norm <- as.data.frame(bag2_s1_norm)
+bag2_s2_norm <- as.data.frame(bag2_s2_norm)
+bag2_s4_norm <- as.data.frame(bag2_s4_norm)
+#Add indexes
+norm_Index <- c(1:2594)
+bag2_s1_norm[["Index"]] <- norm_Index
+bag2_s2_norm[["Index"]] <- norm_Index
+bag2_s4_norm[["Index"]] <- norm_Index
+
+#Display graphs
+plot(bag2_s1_norm$Index, bag2_s1_norm$bag2_s1_norm, type = 'l', lty=1, ylim = c(0,1), col="gray", lwd=3,
+     main="BAG2: NORMALIZED-SMOOTHED DATA", xlab="Time(sec)", ylab="conductivity (ms)")
+lines(bag2_s2_norm$Index, bag2_s2_norm$bag2_s2_norm, type = 'l', lty=1, col="tomato", lwd=3)
+lines(bag2_s4_norm$Index, bag2_s4_norm$bag2_s4_norm, type = 'l', lty=1, col="deepskyblue", lwd=3)
+legend("topleft", legend=c("SMOOTHED_Sensor1: start", 
+                                             "SMOOTHED_Sensor2: HPLC",
+                                             "SMOOTHED_Sensor4: FC_dust"),
+       col=c("gray","tomato","deepskyblue"), 
+       lty=1, lwd=3, bty = "n", cex=0.6)
+
+rm(B1s1, B1s2, B1s4, B2s1, B2s2, B2s4)
+
 #set start points and end points for sensor1 (data smoothed from BAG2)
-bag2_s1_start_1 <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[2]]
-bag2_s1_end_1   <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[3]]
+bag2_s1_start_1 <- bag2_s1_norm$Index[bag2_s1_norm_cpt@cpts[2]]
+bag2_s1_end_1   <- bag2_s1_norm$Index[bag2_s1_norm_cpt@cpts[3]]
 
-bag2_s1_start_2 <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[4]]
-bag2_s1_end_2   <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[5]]
+bag2_s1_start_2 <- bag2_s1_norm$Index[bag2_s1_norm_cpt@cpts[4]]
+bag2_s1_end_2   <- bag2_s1_norm$Index[bag2_s1_norm_cpt@cpts[5]]
 
-bag2_s1_start_3 <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[6]]
-bag2_s1_end_3   <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[7]]
+bag2_s1_start_3 <- bag2_s1_norm$Index[bag2_s1_norm_cpt@cpts[6]]
+bag2_s1_end_3   <- bag2_s1_norm$Index[bag2_s1_norm_cpt@cpts[7.5]]
 
-bag2_s1_start_4 <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[8]]
-bag2_s1_end_4   <- BAG2_cond1_smooth$Index[bag2_s1_norm_cpt@cpts[9]]
+bag2_s1_start_4 <- bag2_s1_norm$Index[bag2_s1_norm_cpt@cpts[8]]
+bag2_s1_end_4   <- bag2_s1_norm$Index[bag2_s1_norm_cpt@cpts[9]]
 
 dumb_smooth <- 30
-bag2_sub_peak1 <- BAG2_cond1_smooth[which(BAG2_cond1_smooth$Index >= (bag2_s1_start_1 - dumb_smooth) & BAG2_cond1_smooth$Index <= (bag2_s1_end_1 + dumb_smooth)),]
-bag2_sub_peak2 <- BAG2_cond1_smooth[which(BAG2_cond1_smooth$Index >= (bag2_s1_start_2 - dumb_smooth) & BAG2_cond1_smooth$Index <= (bag2_s1_end_2 + dumb_smooth)),]
-bag2_sub_peak3 <- BAG2_cond1_smooth[which(BAG2_cond1_smooth$Index >= (bag2_s1_start_3 - dumb_smooth) & BAG2_cond1_smooth$Index <= (bag2_s1_end_3 + dumb_smooth)),]
-bag2_sub_peak4 <- BAG2_cond1_smooth[which(BAG2_cond1_smooth$Index >= (bag2_s1_start_4 - dumb_smooth) & BAG2_cond1_smooth$Index <= (bag2_s1_end_4 + dumb_smooth)),]
+bag2_sub_peak1 <- bag2_s1_norm[which(bag2_s1_norm$Index >= (bag2_s1_start_1 - dumb_smooth) & bag2_s1_norm$Index <= (bag2_s1_end_1 + dumb_smooth)),]
+bag2_sub_peak2 <- bag2_s1_norm[which(bag2_s1_norm$Index >= (bag2_s1_start_2 - dumb_smooth) & bag2_s1_norm$Index <= (bag2_s1_end_2 + dumb_smooth)),]
+bag2_sub_peak3 <- bag2_s1_norm[which(bag2_s1_norm$Index >= (bag2_s1_start_3 - dumb_smooth) & bag2_s1_norm$Index <= (bag2_s1_end_3 + dumb_smooth)),]
+bag2_sub_peak4 <- bag2_s1_norm[which(bag2_s1_norm$Index >= (bag2_s1_start_4 - dumb_smooth) & bag2_s1_norm$Index <= (bag2_s1_end_4 + dumb_smooth)),]
 
-polygon(x = c(bag2_sub_peak1$Index, rev(bag2_sub_peak1$Index)), y = c(bag2_sub_peak1$BAG2_cond1, rep(0,length(bag2_sub_peak1$BAG2_cond1))), col="grey")
-polygon(x = c(bag2_sub_peak2$Index, rev(bag2_sub_peak2$Index)), y = c(bag2_sub_peak2$BAG2_cond1, rep(0,length(bag2_sub_peak2$BAG2_cond1))), col="grey")
-polygon(x = c(bag2_sub_peak3$Index, rev(bag2_sub_peak3$Index)), y = c(bag2_sub_peak3$BAG2_cond1, rep(0,length(bag2_sub_peak3$BAG2_cond1))), col="grey")
-polygon(x = c(bag2_sub_peak4$Index, rev(bag2_sub_peak4$Index)), y = c(bag2_sub_peak4$BAG2_cond1, rep(0,length(bag2_sub_peak4$BAG2_cond1))), col="grey")
+polygon(x = c(bag2_sub_peak1$Index, rev(bag2_sub_peak1$Index)), y = c(bag2_sub_peak1$bag2_s1_norm, rep(0,length(bag2_sub_peak1$bag2_s1_norm))), col="grey")
+polygon(x = c(bag2_sub_peak2$Index, rev(bag2_sub_peak2$Index)), y = c(bag2_sub_peak2$bag2_s1_norm, rep(0,length(bag2_sub_peak2$bag2_s1_norm))), col="grey")
+polygon(x = c(bag2_sub_peak3$Index, rev(bag2_sub_peak3$Index)), y = c(bag2_sub_peak3$bag2_s1_norm, rep(0,length(bag2_sub_peak3$bag2_s1_norm))), col="grey")
+polygon(x = c(bag2_sub_peak4$Index, rev(bag2_sub_peak4$Index)), y = c(bag2_sub_peak4$bag2_s1_norm, rep(0,length(bag2_sub_peak4$bag2_s1_norm))), col="grey")
 
 #
 #areas under the Curve for each of the selected peaks
-sub_peak1_area <- AUC(bag2_sub_peak1$Index, bag2_sub_peak1$BAG2_cond1)
-sub_peak2_area <- AUC(bag2_sub_peak2$Index, bag2_sub_peak2$BAG2_cond1)
-sub_peak3_area <- AUC(bag2_sub_peak3$Index, bag2_sub_peak3$BAG2_cond1)
-sub_peak4_area <- AUC(bag2_sub_peak4$Index, bag2_sub_peak4$BAG2_cond1)
+sub_peak1_area <- AUC(bag2_sub_peak1$Index, bag2_sub_peak1$bag2_s1_norm)
+sub_peak2_area <- AUC(bag2_sub_peak2$Index, bag2_sub_peak2$bag2_s1_norm)
+sub_peak3_area <- AUC(bag2_sub_peak3$Index, bag2_sub_peak3$bag2_s1_norm)
+sub_peak4_area <- AUC(bag2_sub_peak4$Index, bag2_sub_peak4$bag2_s1_norm)
 
 #-------------------------------------------------------------------------------
 #SENSOR2-------------------
 #set start points and end points for sensor2 (data smoothed from BAG2)
-bag2_s2_start_1 <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[1]]
-bag2_s2_end_1   <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[3.5]]
+bag2_s2_start_1 <- bag2_s2_norm$Index[bag2_s2_norm_cpt@cpts[1]]
+bag2_s2_end_1   <- bag2_s2_norm$Index[bag2_s2_norm_cpt@cpts[3.5]]
 
-bag2_s2_start_2 <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[4]]
-bag2_s2_end_2   <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[6]]
+bag2_s2_start_2 <- bag2_s2_norm$Index[bag2_s2_norm_cpt@cpts[4]]
+bag2_s2_end_2   <- bag2_s2_norm$Index[bag2_s2_norm_cpt@cpts[5]]
 
-bag2_s2_start_3 <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[6]]
-bag2_s2_end_3   <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[7.5]]
+bag2_s2_start_3 <- bag2_s2_norm$Index[bag2_s2_norm_cpt@cpts[6]]
+bag2_s2_end_3   <- bag2_s2_norm$Index[bag2_s2_norm_cpt@cpts[7]]
 
-bag2_s2_start_4 <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[8]]
-bag2_s2_end_4   <- BAG2_cond2_smooth$Index[bag2_s2_norm_cpt@cpts[10]]
+bag2_s2_start_4 <- bag2_s2_norm$Index[bag2_s2_norm_cpt@cpts[8]]
+bag2_s2_end_4   <- bag2_s2_norm$Index[bag2_s2_norm_cpt@cpts[10]]
 
-dumb_smooth <- 30
-bag2_sub_peak1 <- BAG2_cond2_smooth[which(BAG2_cond2_smooth$Index >= (bag2_s2_start_1 - dumb_smooth) & BAG2_cond2_smooth$Index <= (bag2_s2_end_1 + dumb_smooth)),]
-bag2_sub_peak2 <- BAG2_cond2_smooth[which(BAG2_cond2_smooth$Index >= (bag2_s2_start_2 - dumb_smooth) & BAG2_cond2_smooth$Index <= (bag2_s2_end_2 + dumb_smooth)),]
-bag2_sub_peak3 <- BAG2_cond2_smooth[which(BAG2_cond2_smooth$Index >= (bag2_s2_start_3 - dumb_smooth) & BAG2_cond2_smooth$Index <= (bag2_s2_end_3 + dumb_smooth)),]
-bag2_sub_peak4 <- BAG2_cond2_smooth[which(BAG2_cond2_smooth$Index >= (bag2_s2_start_4 - dumb_smooth) & BAG2_cond2_smooth$Index <= (bag2_s2_end_4 + dumb_smooth)),]
+bag2_sub_peak1 <- bag2_s2_norm[which(bag2_s2_norm$Index >= (bag2_s2_start_1 - dumb_smooth) & bag2_s2_norm$Index <= (bag2_s2_end_1 + dumb_smooth)),]
+bag2_sub_peak2 <- bag2_s2_norm[which(bag2_s2_norm$Index >= (bag2_s2_start_2 - dumb_smooth) & bag2_s2_norm$Index <= (bag2_s2_end_2 + dumb_smooth)),]
+bag2_sub_peak3 <- bag2_s2_norm[which(bag2_s2_norm$Index >= (bag2_s2_start_3 - dumb_smooth) & bag2_s2_norm$Index <= (bag2_s2_end_3 + dumb_smooth)),]
+bag2_sub_peak4 <- bag2_s2_norm[which(bag2_s2_norm$Index >= (bag2_s2_start_4 - dumb_smooth) & bag2_s2_norm$Index <= (bag2_s2_end_4 + dumb_smooth)),]
 
-polygon(x = c(bag2_sub_peak1$Index, rev(bag2_sub_peak1$Index)), y = c(bag2_sub_peak1$BAG2_cond2, rep(0,length(bag2_sub_peak1$BAG2_cond2))), col="tomato")
-polygon(x = c(bag2_sub_peak2$Index, rev(bag2_sub_peak2$Index)), y = c(bag2_sub_peak2$BAG2_cond2, rep(0,length(bag2_sub_peak2$BAG2_cond2))), col="tomato")
-polygon(x = c(bag2_sub_peak3$Index, rev(bag2_sub_peak3$Index)), y = c(bag2_sub_peak3$BAG2_cond2, rep(0,length(bag2_sub_peak3$BAG2_cond2))), col="tomato")
-polygon(x = c(bag2_sub_peak4$Index, rev(bag2_sub_peak4$Index)), y = c(bag2_sub_peak4$BAG2_cond2, rep(0,length(bag2_sub_peak4$BAG2_cond2))), col="tomato")
+polygon(x = c(bag2_sub_peak1$Index, rev(bag2_sub_peak1$Index)), y = c(bag2_sub_peak1$bag2_s2_norm, rep(0,length(bag2_sub_peak1$bag2_s2_norm))), col="tomato")
+polygon(x = c(bag2_sub_peak2$Index, rev(bag2_sub_peak2$Index)), y = c(bag2_sub_peak2$bag2_s2_norm, rep(0,length(bag2_sub_peak2$bag2_s2_norm))), col="tomato")
+polygon(x = c(bag2_sub_peak3$Index, rev(bag2_sub_peak3$Index)), y = c(bag2_sub_peak3$bag2_s2_norm, rep(0,length(bag2_sub_peak3$bag2_s2_norm))), col="tomato")
+polygon(x = c(bag2_sub_peak4$Index, rev(bag2_sub_peak4$Index)), y = c(bag2_sub_peak4$bag2_s2_norm, rep(0,length(bag2_sub_peak4$bag2_s2_norm))), col="tomato")
 
 #
 #areas under the Curve for each of the selected peaks
-sub2_peak1_area <- AUC(bag2_sub_peak1$Index, bag2_sub_peak1$BAG2_cond2)
-sub2_peak2_area <- AUC(bag2_sub_peak2$Index, bag2_sub_peak2$BAG2_cond2)
-sub2_peak3_area <- AUC(bag2_sub_peak3$Index, bag2_sub_peak3$BAG2_cond2)
-sub2_peak4_area <- AUC(bag2_sub_peak4$Index, bag2_sub_peak4$BAG2_cond2)
+sub2_peak1_area <- AUC(bag2_sub_peak1$Index, bag2_sub_peak1$bag2_s2_norm)
+sub2_peak2_area <- AUC(bag2_sub_peak2$Index, bag2_sub_peak2$bag2_s2_norm)
+sub2_peak3_area <- AUC(bag2_sub_peak3$Index, bag2_sub_peak3$bag2_s2_norm)
+sub2_peak4_area <- AUC(bag2_sub_peak4$Index, bag2_sub_peak4$bag2_s2_norm)
 
 #-------------------------------------------------------------------------------
 #SENSOR4-------------------
 #set start points and end points for sensor4 (data smoothed from BAG2)
-bag2_s4_start_1 <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[2]]
-bag2_s4_end_1   <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[3]]
+bag2_s4_start_1 <- bag2_s4_norm$Index[bag2_s4_norm_cpt@cpts[2]]
+bag2_s4_end_1   <- bag2_s4_norm$Index[bag2_s4_norm_cpt@cpts[3]]
 
-bag2_s4_start_2 <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[4]]
-bag2_s4_end_2   <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[5]]
+bag2_s4_start_2 <- bag2_s4_norm$Index[bag2_s4_norm_cpt@cpts[4]]
+bag2_s4_end_2   <- bag2_s4_norm$Index[bag2_s4_norm_cpt@cpts[5]]
 
-bag2_s4_start_3 <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[6]]
-bag2_s4_end_3   <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[7]]
+bag2_s4_start_3 <- bag2_s4_norm$Index[bag2_s4_norm_cpt@cpts[6]]
+bag2_s4_end_3   <- bag2_s4_norm$Index[bag2_s4_norm_cpt@cpts[7]]
 
-bag2_s4_start_4 <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[8]]
-bag2_s4_end_4   <- BAG2_cond4_smooth$Index[bag2_s4_norm_cpt@cpts[9]]
+bag2_s4_start_4 <- bag2_s4_norm$Index[bag2_s4_norm_cpt@cpts[8]]
+bag2_s4_end_4   <- bag2_s4_norm$Index[bag2_s4_norm_cpt@cpts[9]]
 
-dumb_smooth <- 30
-bag2_sub_peak1 <- BAG2_cond4_smooth[which(BAG2_cond4_smooth$Index >= (bag2_s4_start_1 - dumb_smooth) & BAG2_cond4_smooth$Index <= (bag2_s4_end_1 + dumb_smooth)),]
-bag2_sub_peak2 <- BAG2_cond4_smooth[which(BAG2_cond4_smooth$Index >= (bag2_s4_start_2 - dumb_smooth) & BAG2_cond4_smooth$Index <= (bag2_s4_end_2 + dumb_smooth)),]
-bag2_sub_peak3 <- BAG2_cond4_smooth[which(BAG2_cond4_smooth$Index >= (bag2_s4_start_3 - dumb_smooth) & BAG2_cond4_smooth$Index <= (bag2_s4_end_3 + dumb_smooth)),]
-bag2_sub_peak4 <- BAG2_cond4_smooth[which(BAG2_cond4_smooth$Index >= (bag2_s4_start_4 - dumb_smooth) & BAG2_cond4_smooth$Index <= (bag2_s4_end_4 + dumb_smooth)),]
+bag2_sub_peak1 <- bag2_s4_norm[which(bag2_s4_norm$Index >= (bag2_s4_start_1 - dumb_smooth) & bag2_s4_norm$Index <= (bag2_s4_end_1 + dumb_smooth)),]
+bag2_sub_peak2 <- bag2_s4_norm[which(bag2_s4_norm$Index >= (bag2_s4_start_2 - dumb_smooth) & bag2_s4_norm$Index <= (bag2_s4_end_2 + dumb_smooth)),]
+bag2_sub_peak3 <- bag2_s4_norm[which(bag2_s4_norm$Index >= (bag2_s4_start_3 - dumb_smooth) & bag2_s4_norm$Index <= (bag2_s4_end_3 + dumb_smooth)),]
+bag2_sub_peak4 <- bag2_s4_norm[which(bag2_s4_norm$Index >= (bag2_s4_start_4 - dumb_smooth) & bag2_s4_norm$Index <= (bag2_s4_end_4 + dumb_smooth)),]
 
-polygon(x = c(bag2_sub_peak1$Index, rev(bag2_sub_peak1$Index)), y = c(bag2_sub_peak1$BAG2_cond4, rep(0,length(bag2_sub_peak1$BAG2_cond4))), col="deepskyblue")
-polygon(x = c(bag2_sub_peak2$Index, rev(bag2_sub_peak2$Index)), y = c(bag2_sub_peak2$BAG2_cond4, rep(0,length(bag2_sub_peak2$BAG2_cond4))), col="deepskyblue")
-polygon(x = c(bag2_sub_peak3$Index, rev(bag2_sub_peak3$Index)), y = c(bag2_sub_peak3$BAG2_cond4, rep(0,length(bag2_sub_peak3$BAG2_cond4))), col="deepskyblue")
-polygon(x = c(bag2_sub_peak4$Index, rev(bag2_sub_peak4$Index)), y = c(bag2_sub_peak4$BAG2_cond4, rep(0,length(bag2_sub_peak4$BAG2_cond4))), col="deepskyblue")
+polygon(x = c(bag2_sub_peak1$Index, rev(bag2_sub_peak1$Index)), y = c(bag2_sub_peak1$bag2_s4_norm, rep(0,length(bag2_sub_peak1$bag2_s4_norm))), col="deepskyblue")
+polygon(x = c(bag2_sub_peak2$Index, rev(bag2_sub_peak2$Index)), y = c(bag2_sub_peak2$bag2_s4_norm, rep(0,length(bag2_sub_peak2$bag2_s4_norm))), col="deepskyblue")
+polygon(x = c(bag2_sub_peak3$Index, rev(bag2_sub_peak3$Index)), y = c(bag2_sub_peak3$bag2_s4_norm, rep(0,length(bag2_sub_peak3$bag2_s4_norm))), col="deepskyblue")
+polygon(x = c(bag2_sub_peak4$Index, rev(bag2_sub_peak4$Index)), y = c(bag2_sub_peak4$bag2_s4_norm, rep(0,length(bag2_sub_peak4$bag2_s4_norm))), col="deepskyblue")
 
 #
 #areas under the Curve for each of the selected peaks
-sub4_peak1_area <- AUC(bag2_sub_peak1$Index, bag2_sub_peak1$BAG2_cond4)
-sub4_peak2_area <- AUC(bag2_sub_peak2$Index, bag2_sub_peak2$BAG2_cond4)
-sub4_peak3_area <- AUC(bag2_sub_peak3$Index, bag2_sub_peak3$BAG2_cond4)
-sub4_peak4_area <- AUC(bag2_sub_peak4$Index, bag2_sub_peak4$BAG2_cond4)
+sub4_peak1_area <- AUC(bag2_sub_peak1$Index, bag2_sub_peak1$bag2_s4_norm)
+sub4_peak2_area <- AUC(bag2_sub_peak2$Index, bag2_sub_peak2$bag2_s4_norm)
+sub4_peak3_area <- AUC(bag2_sub_peak3$Index, bag2_sub_peak3$bag2_s4_norm)
+sub4_peak4_area <- AUC(bag2_sub_peak4$Index, bag2_sub_peak4$bag2_s4_norm)
+
+#CREATE A UNIQUE DF FOR RESULTS (3x4)
+peak1 <- c(sub_peak1_area,sub2_peak1_area,sub4_peak1_area)
+peak2 <- c(sub_peak2_area,sub2_peak2_area,sub4_peak2_area)
+peak3 <- c(sub_peak3_area,sub2_peak3_area,sub4_peak3_area)
+peak4 <- c(sub_peak4_area,sub2_peak4_area,sub4_peak4_area)
+
+condSmooth_peakArea <- cbind(peak1, peak2, peak3, peak4)
+condSmooth_peakArea <- as.data.frame(condSmooth_peakArea)
+
+conductivity <- c("sens1:start", "sens2:HPLC", "sens4:FC_dust")
+condSmooth_peakArea[["conductivity"]] <- conductivity
+
+#compute mean, std.dev, rsd% and add col to df
+Means <- rowMeans(condSmooth_peakArea[1:3, 1:4])
+condSmooth_peakArea[["Mean"]] <- Means
+condSmooth_peakArea <- condSmooth_peakArea %>% mutate(stDev = apply(.[(1:4)],1,sd))
+condSmooth_peakArea <- transform(condSmooth_peakArea, RSD = (stDev / Means)*100)
+
+rm(BAG1_cond1,BAG1_cond2,BAG1_cond4,BAG2_cond1,BAG2_cond2,BAG2_cond4,BAG2_Index,
+   bag2_s1_end_1,bag2_s1_end_2,bag2_s1_end_3,bag2_s1_end_4,bag2_s1_norm,
+   bag2_s1_start_1,bag2_s1_start_2,bag2_s1_start_3,bag2_s1_start_4,
+   bag2_s2_end_1,bag2_s2_end_2,bag2_s2_end_3,bag2_s2_end_4,bag2_s2_norm,
+   bag2_s2_start_1,bag2_s2_start_2,bag2_s2_start_3,bag2_s2_start_4,
+   bag2_s4_end_1,bag2_s4_end_2,bag2_s4_end_3,bag2_s4_end_4,bag2_s4_norm,
+   bag2_s4_start_1,bag2_s4_start_2,bag2_s4_start_3,bag2_s4_start_4,
+   conductivity, dumb_smooth,peak1,peak2,peak3,peak4,
+   sub_peak1_area,sub_peak2_area,sub_peak3_area,sub_peak4_area,
+   sub2_peak1_area,sub2_peak2_area,sub2_peak4_area,
+   sub4_peak1_area,sub4_peak2_area,sub4_peak3_area,
+   tmp.span, x1,x2, sub2_peak3_area,sub4_peak4_area,
+   BAG2_cond1_smooth,BAG2_cond2_smooth,
+   BAG2_cond4_smooth,bag2_s1_norm_cpt,bag2_s2_norm_cpt,
+   bag2_s4_norm_cpt,   bag2_sub_peak1,bag2_sub_peak2,bag2_sub_peak3,bag2_sub_peak4)
 
 #-------------------------------------------------------------------------------
 #DRAW WIRE DATA: ~1 acq. per 50 msec
