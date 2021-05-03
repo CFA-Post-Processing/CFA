@@ -782,6 +782,139 @@ rm(sub_peak1_area,sub_peak2_area,sub_peak3_area,sub_peak4_area,
    bag2_sub_peak4)
 #-------------------------------------------------------------------------------
 #DRAW WIRE DATA: ~1 acq. per 50 msec
-#compute mean melting speed with error
-     
-#FLOWMETER DATA: ~1 acq. per 50 msec
+#-------------------------------------------------------------------------------
+#extract the dfs of interest (sample) from estens_sample list to manage them singularly
+DW_df_130504 <- as.data.frame(estens_sample[['2021-04-14_130504']])
+DW_df_134809 <- as.data.frame(estens_sample[['2021-04-14_134809']])
+DW_df_142819 <- as.data.frame(estens_sample[['2021-04-14_142819']])
+
+#extract last 8 string of column (time)
+DW_df_130504$time <- str_sub(DW_df_130504$Time_.H..M..S,-8) 
+DW_df_134809$time <- str_sub(DW_df_134809$Time_.H..M..S,-8) 
+DW_df_142819$time <- str_sub(DW_df_142819$Time_.H..M..S,-8) 
+
+#transform IceHeights and meltspeed from chr to numeric, then
+#compute the average ice heights and meltspeeds per seconds with aggregate function:
+DW_df_130504$Ice.Height..mm. <- as.numeric(gsub(",", ".", DW_df_130504$Ice.Height..mm.))
+DW_df_130504$Melt.speed..mm.sec. <- as.numeric(gsub(",", ".", DW_df_130504$Melt.speed..mm.sec.))
+#
+DW_df_134809$Ice.Height..mm. <- as.numeric(gsub(",", ".", DW_df_134809$Ice.Height..mm.)) 
+DW_df_134809$Melt.speed..mm.sec. <- as.numeric(gsub(",", ".", DW_df_134809$Melt.speed..mm.sec.)) 
+#
+DW_df_142819$Ice.Height..mm. <- as.numeric(gsub(",", ".", DW_df_142819$Ice.Height..mm.))
+DW_df_142819$Melt.speed..mm.sec. <- as.numeric(gsub(",", ".", DW_df_142819$Melt.speed..mm.sec.))
+
+#COMPUTE THE AVERAGE VALUES (Ice Heights and Melting speed) PER SECONDS 
+#IceHeights per sec
+file130504_MeanIceHEIGHT <- aggregate(DW_df_130504$Ice.Height..mm. ~ DW_df_130504$time, DW_df_130504, mean)
+file134809_MeanIceHEIGHT <- aggregate(DW_df_134809$Ice.Height..mm. ~ DW_df_134809$time, DW_df_134809, mean)
+file142819_MeanIceHEIGHT <- aggregate(DW_df_142819$Ice.Height..mm. ~ DW_df_142819$time, DW_df_142819, mean)
+#Meltspeeds per sec
+file130504_MeanMeltSPEED <- aggregate(DW_df_130504$Melt.speed..mm.sec. ~ DW_df_130504$time, DW_df_130504, mean)
+file134809_MeanMeltSPEED <- aggregate(DW_df_134809$Melt.speed..mm.sec. ~ DW_df_134809$time, DW_df_134809, mean)
+file142819_MeanMeltSPEED <- aggregate(DW_df_142819$Melt.speed..mm.sec. ~ DW_df_142819$time, DW_df_142819, mean)
+
+#ADD time index (for next plots) to each df
+Time_130504 <- c(1:2552)
+Time_134809 <- c(1:2363)
+Time_142819 <- c(1:1201)
+#
+file130504_MeanIceHEIGHT$index <- Time_130504
+file134809_MeanIceHEIGHT$index <- Time_134809
+file142819_MeanIceHEIGHT$index <- Time_142819
+#
+file130504_MeanMeltSPEED$index <- Time_130504
+file134809_MeanMeltSPEED$index <- Time_134809
+file142819_MeanMeltSPEED$index <- Time_142819
+
+#rename cols
+colname1 <- c("time","mean Ice Height (mm)","index")
+file130504_MeanIceHEIGHT <-setNames(file130504_MeanIceHEIGHT, colname1)
+file134809_MeanIceHEIGHT <-setNames(file134809_MeanIceHEIGHT, colname1)
+file142819_MeanIceHEIGHT <-setNames(file142819_MeanIceHEIGHT, colname1)
+#
+colname2 <- c("time","mean melt speed (mm/sec)","index")
+file130504_MeanMeltSPEED <-setNames(file130504_MeanMeltSPEED, colname2)
+file134809_MeanMeltSPEED <-setNames(file134809_MeanMeltSPEED, colname2)
+file142819_MeanMeltSPEED <-setNames(file142819_MeanMeltSPEED, colname2)
+
+#subset the MeanIceHEIGHT df, keep only specific timeframes 
+#134809: keep data from the begin (13:48:16) to 14:02:59 (row 884)
+MIH_134809_first <- file134809_MeanIceHEIGHT[-c(885:2363), ]
+#134809: keep data from 14:03:00 (row 885) to the end of df (14:27:38)
+MIH_134809_second <- file134809_MeanIceHEIGHT[-c(1:884), ]
+#
+#subset the MeltSPEED df, keep only specific timeframes 
+#134809: keep data from the begin (13:48:16) to 14:02:59 (row 884)
+MS_134809_first <- file134809_MeanMeltSPEED[-c(885:2363), ]
+#134809: keep data from 14:03:00 (row ) to the end of df (14:27:38)
+MS_134809_second <- file134809_MeanMeltSPEED[-c(1:884), ]
+
+#MIH_BAG1: 130504 + 134809 (first) df subset
+MIH_BAG1 <- list(file130504_MeanIceHEIGHT,MIH_134809_first)
+BAG1_IceHeight <- do.call("rbind", MIH_BAG1)
+rm(MIH_BAG1)
+#remove data from the beginning until the 13:20:27 (index 919)
+BAG1_IceHeight <- BAG1_IceHeight[-c(1:919), ]
+#adjust index and add it to the df 
+v <- c(0:2516)
+BAG1_IceHeight$index <- v 
+#remove data tail from 14:02:34 (index 2491)
+BAG1_IceHeight <- BAG1_IceHeight[-c(2491:2517), ]
+
+#MS_BAG1: 130504 + 134809 (first) df subset
+MS_BAG1 <- list(file130504_MeanMeltSPEED,MS_134809_first)
+BAG1_MeltSpeed <- do.call("rbind", MS_BAG1)
+rm(MS_BAG1)
+#remove data from the beginning until the 13:20:27 (index 919)
+BAG1_MeltSpeed <- BAG1_MeltSpeed[-c(1:919), ]
+#adjust index and add it to the df 
+v <- c(0:2516)
+BAG1_MeltSpeed$index <- v 
+#remove data tail from 14:02:34 (index 2491)
+BAG1_MeltSpeed <- BAG1_MeltSpeed[-c(2491:2517), ]
+#
+#MIH_BAG2: 134809 (second) + 142819 (all!) df subset
+MIH_BAG2 <- list(MIH_134809_second, file142819_MeanIceHEIGHT)
+BAG2_IceHeight <- do.call("rbind", MIH_BAG2)
+rm(MIH_BAG2)
+#adjust index and add it to the df 
+v <- c(0:2679)
+BAG2_IceHeight$index <- v 
+#remove data tail from 14:44:24 (index 2440)
+BAG2_IceHeight <- BAG2_IceHeight[-c(2440:2680), ]
+#
+#MS_BAG2: 134809 (second) + 142819 (all!) df subset
+MS_BAG2 <- list(MS_134809_second, file142819_MeanMeltSPEED)
+BAG2_MeltSpeed <- do.call("rbind", MS_BAG2)
+rm(MS_BAG2)
+#adjust index and add it to the df 
+v <- c(0:2679)
+BAG2_MeltSpeed$index <- v 
+#remove data tail from 14:44:24 (index 2440)
+BAG2_MeltSpeed <- BAG2_MeltSpeed[-c(2440:2680), ]
+
+rm(DW_df_130504,DW_df_134809,DW_df_142819,colname1,colname2, Time_130504,Time_134809,
+   Time_142819, file130504_MeanIceHEIGHT,file130504_MeanMeltSPEED,file134809_MeanIceHEIGHT,
+   file134809_MeanMeltSPEED,file142819_MeanIceHEIGHT,file142819_MeanMeltSPEED,
+   MS_134809_first,MS_134809_second, MIH_134809_first, MIH_134809_second)
+
+#ICE HEIGHTS--------------------------------------------------------------------
+#BAG1 plot
+plot(BAG1_IceHeight$`mean Ice Height (mm)`~BAG1_IceHeight$index, type="l",
+     main="BAG1:Ice Height(mm)",
+     ylab="Ice Height (mm)", xlab="Time (sec)")
+#BAG2 plot
+plot(BAG2_IceHeight$`mean Ice Height (mm)`~BAG2_IceHeight$index, type="l",
+     main="BAG2:Ice Height(mm)",
+     ylab="Ice Height (mm)", xlab="Time (sec)")
+
+#MELT SPEED---------------------------------------------------------------------
+#BAG1 plot
+plot(BAG1_MeltSpeed$`mean melt speed (mm/sec)`~BAG1_MeltSpeed$index, type="l",
+     main="BAG1:Melt Speed (mm/sec)", 
+     ylab="Melt Speed (mm/sec)", xlab="Time (sec)")
+#BAG2 plot
+plot(BAG2_MeltSpeed$`mean melt speed (mm/sec)`~BAG2_MeltSpeed$index, type="l",
+     main="BAG2:Melt Speed (mm/sec)",
+     ylab="Melt Speed (mm/sec)", xlab="Time (sec)")
