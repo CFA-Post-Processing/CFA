@@ -996,12 +996,28 @@ BAG2_flow$index <- v
 #remove data tail from 14:44:24 (index 2440)
 BAG2_flow <- BAG2_flow[-c(2440:2680), ]
 
-#PLOTS
-#BAG1 plot
-plot(BAG1_flow$`flow (ul/min)` ~ BAG1_flow$index, type="l",
-     main="BAG1:flow rate (ul/min)", 
-     ylab="Flow rate (ul/min)", xlab="Time (sec)")
-#BAG2 plot
-plot(BAG2_flow$`flow (ul/min)` ~ BAG2_flow$index, type="l",
-     main="BAG2:flow rate (ul/min)", 
-     ylab="Flow rate (ul/min)", xlab="Time (sec)")
+#DATA SMOOTHING:SETTINGS---------------------------------------------------
+tmp.span <- 0.1
+flow1 <- unlist(BAG1_flow[,2])
+flow2 <- unlist(BAG2_flow[,2])
+
+x1 <- BAG1_flow$index
+x2 <- BAG2_flow$index
+
+#DATA SMOOTHING-----------------------------------------------------------------
+BAG1_flow1 <- loess(flow1 ~ x1, span=tmp.span)$fitted
+BAG2_flow2 <- loess(flow2 ~ x2, span=tmp.span)$fitted
+#-------------------------------------------------------------------------------
+#PLOTS 
+#BAG1
+plot(BAG1_flow$`flow (ul/min)` ~ BAG1_flow$index , ylim = c(-2500,3000), 
+     type="l", main="BAG1: flow rate (ul/min)", xlab="Time(sec)", ylab="Flow rate (ul/min)")
+par(new=TRUE) 
+plot(x1, BAG1_flow1, type = 'l', lty=1, ylim = c(-2500,3000), col="red", lwd=3,
+     axes = FALSE, xlab = "", ylab = "")
+#BAG2
+plot(BAG2_flow$`flow (ul/min)` ~ BAG2_flow$index , ylim = c(-2500,3000), 
+     type="l", main="BAG2: flow rate (ul/min)", xlab="Time(sec)", ylab="Flow rate (ul/min)")
+par(new=TRUE) 
+plot(x2, BAG2_flow2, type = 'l', lty=1, ylim = c(-2500,3000), col="red", lwd=3,
+     axes = FALSE, xlab = "", ylab = "")
