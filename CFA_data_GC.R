@@ -1021,3 +1021,16 @@ plot(BAG2_flow$`flow (ul/min)` ~ BAG2_flow$index , ylim = c(-2500,3000),
 par(new=TRUE) 
 plot(x2, BAG2_flow2, type = 'l', lty=1, ylim = c(-2500,3000), col="red", lwd=3,
      axes = FALSE, xlab = "", ylab = "")
+                                              
+ 
+#BAG1 STATS (ul/min)
+flow_bag1 <- as.array(BAG1_flow$`flow (ul/min)`)
+Mean_flow1 <- mean(flow_bag1)
+stDev_flow1 <- sd(flow_bag1)
+rsd_flow1 <- (stDev_flow1/Mean_flow1)*100
+#BAG2 STATS (ul/min)
+flow_bag2 <- as.array(BAG2_flow$`flow (ul/min)`)
+Mean_flow2 <- mean(flow_bag2)
+stDev_flow2 <- sd(flow_bag2)
+rsd_flow2 <- (stDev_flow2/Mean_flow2)*100
+                                             
