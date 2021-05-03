@@ -929,3 +929,79 @@ plot(BAG2_MeltSpeed$`mean melt speed (mm/sec)`~BAG2_MeltSpeed$index, type="l",
 #-------------------------------------------------------------------------------
 #FLOWMETER DATA: ~1 acq. per 50 msec
 #-------------------------------------------------------------------------------
+#extract the dfs of interest (sample) from flow_sample list to manage them singularly
+flow_df_130504 <- as.data.frame(flow_sample[['2021-04-14_130504']])
+flow_df_134809 <- as.data.frame(flow_sample[['2021-04-14_134809']])
+flow_df_142819 <- as.data.frame(flow_sample[['2021-04-14_142819']])
+
+#extract last 8 string of column (time)
+flow_df_130504$time <- str_sub(flow_df_130504$Time_.H..M..S,-8) 
+flow_df_134809$time <- str_sub(flow_df_134809$Time_.H..M..S,-8) 
+flow_df_142819$time <- str_sub(flow_df_142819$Time_.H..M..S,-8) 
+
+#transform Flows from chr to numeric, then
+#compute the average values per seconds with aggregate function:
+flow_df_130504$Flow..ul.min. <- as.numeric(gsub(",", ".", flow_df_130504$Flow..ul.min.))
+flow_df_134809$Flow..ul.min. <- as.numeric(gsub(",", ".", flow_df_134809$Flow..ul.min.)) 
+flow_df_142819$Flow..ul.min. <- as.numeric(gsub(",", ".", flow_df_142819$Flow..ul.min.))
+
+#COMPUTE THE AVERAGE VALUES PER SECONDS 
+#IceHeights per sec
+file130504_flow <- aggregate(flow_df_130504$Flow..ul.min. ~ flow_df_130504$time, flow_df_130504, mean)
+file134809_flow <- aggregate(flow_df_134809$Flow..ul.min. ~ flow_df_134809$time, flow_df_134809, mean)
+file142819_flow <- aggregate(flow_df_142819$Flow..ul.min. ~ flow_df_142819$time, flow_df_142819, mean)
+
+#ADD time index (for next plots) to each df
+Time_130504 <- c(1:2551)
+Time_134809 <- c(1:2362)
+Time_142819 <- c(1:1201)
+#
+file130504_flow$index <- Time_130504
+file134809_flow$index <- Time_134809
+file142819_flow$index <- Time_142819
+
+#rename cols
+colname1 <- c("time","flow (ul/min)","index")
+file130504_flow <-setNames(file130504_flow, colname1)
+file134809_flow <-setNames(file134809_flow, colname1)
+file142819_flow <-setNames(file142819_flow, colname1)
+
+rm(flow_df_130504,flow_df_134809,flow_df_142819,flow_sample)
+
+#keep only specific timeframes 
+#134809: keep data from the begin (13:48:16) to 14:02:59 (row 884)
+flow_134809_first <- file134809_flow[-c(885:2363), ]
+#134809: keep data from 14:03:00 (row 885) to the end of df (14:27:38)
+flow_134809_second <- file134809_flow[-c(1:884), ]
+
+#flow_BAG1: 130504 + 134809 (first) df subset
+flow_BAG1 <- list(file130504_flow,flow_134809_first)
+BAG1_flow <- do.call("rbind", flow_BAG1)
+rm(flow_BAG1)
+#remove data from the beginning until the 13:20:27 (index 919)
+BAG1_flow <- BAG1_flow[-c(1:919), ]
+#adjust index and add it to the df 
+v <- c(0:2515)
+BAG1_flow$index <- v 
+#remove data tail from 14:02:34 (index 2491)
+BAG1_flow <- BAG1_flow[-c(2491:2517), ]
+#
+#flow_BAG2: 134809 (second) + 142819 (all!) df subset
+flow_BAG2 <- list(flow_134809_second, file142819_flow)
+BAG2_flow <- do.call("rbind", flow_BAG2)
+rm(flow_BAG2)
+#adjust index and add it to the df 
+v <- c(0:2678)
+BAG2_flow$index <- v 
+#remove data tail from 14:44:24 (index 2440)
+BAG2_flow <- BAG2_flow[-c(2440:2680), ]
+
+#PLOTS
+#BAG1 plot
+plot(BAG1_flow$`flow (ul/min)` ~ BAG1_flow$index, type="l",
+     main="BAG1:flow rate (ul/min)", 
+     ylab="Flow rate (ul/min)", xlab="Time (sec)")
+#BAG2 plot
+plot(BAG2_flow$`flow (ul/min)` ~ BAG2_flow$index, type="l",
+     main="BAG2:flow rate (ul/min)", 
+     ylab="Flow rate (ul/min)", xlab="Time (sec)")
