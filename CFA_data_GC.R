@@ -10,6 +10,12 @@
 #clean the virtual work folder
 rm(list = ls()) 
 
+library(ampd)        #An Algorithm for Automatic Peak Detection in Noisy Periodic and
+                      #Quasi-Periodic Signals
+library(zoo)
+library(Bolstad2)
+library(changepoint)
+library(DescTools)
 library(tidyverse)
 library(lubridate)
 library(nycflights13)
@@ -45,8 +51,8 @@ drawwire_files <- as.array(list.files(pattern="*_height.txt"))
 drawwire_datalist <- lapply(drawwire_files, 
                             tryCatch(read.table, 
                                      header=FALSE, 
-                                     fill = TRUE,
-                                     sep="/t", skip = 6))
+                                     fill = TRUE, dec=",",
+                                     sep="\t", skip = 6))
 
 setwd("C:/Users/azzur/Dropbox/Il mio PC (LAPTOP-AUDRMQN9)/Desktop/CFA_data/CFA_HPLC/flow_data")
 flowmeter_files <- as.array(list.files(pattern=".txt"))
@@ -262,8 +268,7 @@ barplot(BAG1_CountsDiffDistr, col=rgb(0, 1, 0, .5),
      ylab = "dN/dlog(d)",
      xlab = expression(paste("Diameter (", mu, "m)")))
      box()
-dev.off()
-     
+
 #BAG2--------------------------------------------------------------------------
 #Tot counts per channel
 BAG2_distr <- colSums(BAG2_abakus[BAG2_start_row_index:BAG2_last_row_index,BAG2_start_column_index:BAG2_last_column_index])
@@ -271,6 +276,7 @@ BAG2_distr <- colSums(BAG2_abakus[BAG2_start_row_index:BAG2_last_row_index,BAG2_
 size_classes <- c(0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.9,3.2,
                        3.5,3.9,4.3,4.8,5.3,5.8,6.4,7.1,7.8,8.6,9.5,10.5,11.6,12.8,
                        14.1,15.5,80.0)
+par(mfrow=c(1,1))
 barplot(BAG2_distr,
   names.arg = size_classes,
   space = 0,
@@ -315,7 +321,8 @@ barplot(BAG2_CountsDiffDistr, col=rgb(0, 1, 0, .8),
  ylab = "dN/dlog(d)",
  xlab = expression(paste("Diameter (", mu, "m)")))
 box()
-     
+
+par(mfrow=c(1,1))
 #--------------------PLOTS_COMPARISON-------------------------------------------
 #Define a function for scientific notation 
 sciNotation <- function(x, digits = 1) {
@@ -918,3 +925,7 @@ plot(BAG1_MeltSpeed$`mean melt speed (mm/sec)`~BAG1_MeltSpeed$index, type="l",
 plot(BAG2_MeltSpeed$`mean melt speed (mm/sec)`~BAG2_MeltSpeed$index, type="l",
      main="BAG2:Melt Speed (mm/sec)",
      ylab="Melt Speed (mm/sec)", xlab="Time (sec)")
+
+#-------------------------------------------------------------------------------
+#FLOWMETER DATA: ~1 acq. per 50 msec
+#-------------------------------------------------------------------------------
