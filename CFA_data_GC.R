@@ -779,7 +779,8 @@ DELAYS <- setNames(DELAYS, COLNAME)
 
 
 rm(s1,s2,s4,vals, H1,H2,H4, delay_hplc, delay_fc, namesheights,DELAYS_HPLC,DELAYS_FC,
-   stats, COLNAME)
+   stats, COLNAME,delay_fc_mean,delay_fc_rsd,delay_fc_stdev,delay_hplc_mean,
+   delay_hplc_rsd,delay_hplc_stdev)
 
 rm(sub_peak1_area,sub_peak2_area,sub_peak3_area,sub_peak4_area,
    sub2_peak1_area,sub2_peak2_area,sub2_peak3_area,sub2_peak4_area,
@@ -880,6 +881,9 @@ v <- c(0:2516)
 BAG1_MeltSpeed$index <- v 
 #remove data tail from 14:02:34 (index 2491)
 BAG1_MeltSpeed <- BAG1_MeltSpeed[-c(2491:2517), ]
+#add new column for conversion mm/sec to cm/min
+MeltSpeed_cm.min<- (BAG1_MeltSpeed$`mean melt speed (mm/sec)`)*6.089
+BAG1_MeltSpeed <- cbind(BAG1_MeltSpeed,MeltSpeed_cm.min)
 #
 #MIH_BAG2: 134809 (second) + 142819 (all!) df subset
 MIH_BAG2 <- list(MIH_134809_second, file142819_MeanIceHEIGHT)
@@ -900,11 +904,14 @@ v <- c(0:2679)
 BAG2_MeltSpeed$index <- v 
 #remove data tail from 14:44:24 (index 2440)
 BAG2_MeltSpeed <- BAG2_MeltSpeed[-c(2440:2680), ]
+#add new column for conversion mm/sec to cm/min
+MeltSpeed_cm.min<- (BAG2_MeltSpeed$`mean melt speed (mm/sec)`)*6.089
+BAG2_MeltSpeed <- cbind(BAG2_MeltSpeed,MeltSpeed_cm.min)
 
 rm(DW_df_130504,DW_df_134809,DW_df_142819,colname1,colname2, Time_130504,Time_134809,
    Time_142819, file130504_MeanIceHEIGHT,file130504_MeanMeltSPEED,file134809_MeanIceHEIGHT,
    file134809_MeanMeltSPEED,file142819_MeanIceHEIGHT,file142819_MeanMeltSPEED,
-   MS_134809_first,MS_134809_second, MIH_134809_first, MIH_134809_second)
+   MS_134809_first,MS_134809_second, MIH_134809_first, MIH_134809_second, estens_sample)
 
 #ICE HEIGHTS--------------------------------------------------------------------
 #BAG1 plot
@@ -916,15 +923,51 @@ plot(BAG2_IceHeight$`mean Ice Height (mm)`~BAG2_IceHeight$index, type="l",
      main="BAG2:Ice Height(mm)",
      ylab="Ice Height (mm)", xlab="Time (sec)")
 
-#MELT SPEED---------------------------------------------------------------------
+#MELT SPEED: spikes and plots---------------------------------------------------
+#REMOVE SPIKES with filter 
+#first, identify the outliers and save them in a vector
+outliers_bag1 <- boxplot(BAG1_MeltSpeed$MeltSpeed_cm.min, plot=FALSE)$out
+outliers_bag2 <- boxplot(BAG2_MeltSpeed$MeltSpeed_cm.min, plot=FALSE)$out
+
+#This vector is to be
+#excluded from our dataset. The which() function tells us the rows in which the
+#outliers exist, these rows are to be removed from our data set. However, before
+#removing them, I store "warpbreaks" in a variable, suppose x, to ensure that I
+#don't destroy the dataset.
+x <- BAG1_MeltSpeed 
+x <- x[-which(x$MeltSpeed_cm.min %in% outliers_bag1),]
+
+y <- BAG2_MeltSpeed
+y <- y[-which(y$MeltSpeed_cm.min %in% outliers_bag2),]
+
 #BAG1 plot
-plot(BAG1_MeltSpeed$`mean melt speed (mm/sec)`~BAG1_MeltSpeed$index, type="l",
-     main="BAG1:Melt Speed (mm/sec)", 
-     ylab="Melt Speed (mm/sec)", xlab="Time (sec)")
+plot(x$MeltSpeed_cm.min ~ x$index, type="l",
+     main="BAG1:Melt Speed (cm/min)", 
+     ylab="Melt Speed (cm/min)", xlab="Time (sec)")
 #BAG2 plot
-plot(BAG2_MeltSpeed$`mean melt speed (mm/sec)`~BAG2_MeltSpeed$index, type="l",
-     main="BAG2:Melt Speed (mm/sec)",
-     ylab="Melt Speed (mm/sec)", xlab="Time (sec)")
+plot(y$MeltSpeed_cm.min ~ y$index, type="l",
+     main="BAG2:Melt Speed (cm/min)",
+     ylab="Melt Speed (cm/min)", xlab="Time (sec)")
+
+#BAG1 STATS (cm/min)
+x <- as.array(x$MeltSpeed_cm.min)
+Mean_melt1 <- mean(x)
+stDev_melt1 <- sd(x)
+rsd_melt1 <- (stDev_melt1/Mean_melt1)*100
+BAG1_MeltStat <- as.data.frame(cbind(Mean_melt1,stDev_melt1,rsd_melt1))
+meltnames <- c("Mean melt speed (cm/min)","stDev","rsd %")
+BAG1_MeltStat <- setNames(BAG1_MeltStat, meltnames)
+
+#BAG2 STATS (cm/min)
+y <- as.array(y$MeltSpeed_cm.min)
+Mean_melt2 <- mean(y)
+stDev_melt2 <- sd(y)
+rsd_melt2 <- (stDev_melt2/Mean_melt2)*100
+BAG2_MeltStat <- as.data.frame(cbind(Mean_melt2,stDev_melt2,rsd_melt2))
+BAG2_MeltStat <- setNames(BAG2_MeltStat, meltnames)
+
+rm(Mean_melt1,Mean_melt2,meltnames,MeltSpeed_cm.min,outliers_bag1,
+   outliers_bag2,rsd_melt1,rsd_melt2,stDev_melt1,stDev_melt2,v,x,y)
 
 #-------------------------------------------------------------------------------
 #FLOWMETER DATA: ~1 acq. per 50 msec
@@ -1021,16 +1064,28 @@ plot(BAG2_flow$`flow (ul/min)` ~ BAG2_flow$index , ylim = c(-2500,3000),
 par(new=TRUE) 
 plot(x2, BAG2_flow2, type = 'l', lty=1, ylim = c(-2500,3000), col="red", lwd=3,
      axes = FALSE, xlab = "", ylab = "")
-                                              
- 
+
+rm(file130504_flow,file134809_flow,file142819_flow,flow_134809_first,flow_134809_second)
+
 #BAG1 STATS (ul/min)
 flow_bag1 <- as.array(BAG1_flow$`flow (ul/min)`)
+flow_bag1 <- (flow_bag1)/1000 #ml/min
 Mean_flow1 <- mean(flow_bag1)
 stDev_flow1 <- sd(flow_bag1)
 rsd_flow1 <- (stDev_flow1/Mean_flow1)*100
+BAG1_flowstat <- as.data.frame(cbind(Mean_flow1,stDev_flow1,rsd_flow1))
+flownames <- c("Mean flow (ml/min)","stDev","rsd %")
+BAG1_flowstat <- setNames(BAG1_flowstat, flownames)
+
 #BAG2 STATS (ul/min)
 flow_bag2 <- as.array(BAG2_flow$`flow (ul/min)`)
+flow_bag2 <- (flow_bag2)/1000 #ml/min
 Mean_flow2 <- mean(flow_bag2)
 stDev_flow2 <- sd(flow_bag2)
 rsd_flow2 <- (stDev_flow2/Mean_flow2)*100
-                                             
+BAG2_flowstat <- as.data.frame(cbind(Mean_flow2,stDev_flow2,rsd_flow2))
+BAG2_flowstat <- setNames(BAG2_flowstat, flownames)
+
+rm(BAG1_flow1,BAG2_flow2,colname1,flow1,flow2,flownames, 
+   Mean_flow1,Mean_flow2,rsd_flow1,rsd_flow2,stDev_flow1,stDev_flow2,Time_130504,
+   Time_134809,Time_142819,tmp.span,v,x1,x2, flow_bag1,flow_bag2)
