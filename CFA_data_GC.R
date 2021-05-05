@@ -1089,3 +1089,22 @@ BAG2_flowstat <- setNames(BAG2_flowstat, flownames)
 rm(BAG1_flow1,BAG2_flow2,colname1,flow1,flow2,flownames, 
    Mean_flow1,Mean_flow2,rsd_flow1,rsd_flow2,stDev_flow1,stDev_flow2,Time_130504,
    Time_134809,Time_142819,tmp.span,v,x1,x2, flow_bag1,flow_bag2)
+                                              
+#group data 
+#BAG1----------------------------------------------------------------------------
+BAG1 <- list(BAG1_abakus,BAG1_cond,BAG1_flow,BAG1_flowstat,BAG1_IceHeight,BAG1_MeltSpeed,
+             BAG1_MeltStat)
+renamebag1 <- c("dust","conductivity","flow","flow statistics","Ice Height","Melt speed",
+                "Melt statitics")
+BAG1 <- setNames(BAG1, renamebag1)
+#BAG2---------------------------------------------------------------------------
+BAG2 <- list(BAG2_abakus,BAG2_cond,BAG2_flow,BAG2_flowstat,BAG2_IceHeight,BAG2_MeltSpeed,
+                                BAG2_MeltStat,Cond_NormSmooth_peakArea,Cond_NormSmooth_peaks,DELAYS)
+renamebag2 <- c("dust","conductivity","flow","flow statistics","Ice Height","Melt speed",
+                "Melt statitics","Peaks:Area","Peaks","Conductivity Sensors:delays")
+BAG2 <- setNames(BAG2, renamebag2)
+
+rm(BAG1_abakus,BAG1_cond,BAG1_flow,BAG1_flowstat,BAG1_IceHeight,BAG1_MeltSpeed,
+   BAG1_MeltStat,BAG2_abakus,BAG2_cond,BAG2_flow,BAG2_flowstat,BAG2_IceHeight,
+   BAG2_MeltSpeed,BAG2_MeltStat,Cond_NormSmooth_peakArea,Cond_NormSmooth_peaks,
+   DELAYS,log_datalist,peak_heights,renamebag1,renamebag2)
