@@ -18,36 +18,22 @@ ui<- fluidPage(
   titlePanel("Continuous Flow Analysis"),
   # Listing DFs
   selectInput(
-    inputId = "tableName", label = "Select data:",
+    inputId = "tableName", label = "Sample:",
     selected = NULL, multiple = FALSE,
-    choices = c("Select Input", samples)
+    choices = c("Select sample", SAMPLE)
   ),
-  )
+  uiOutput("secondSelection")
+)
 
 # Server logic ----
-server <- function(input, output) {
-  
-    dataOP <- reactive({
-      inFile <- input$BAG1
-      if(is.null(input$BAG1)){
-        return(NULL)
-      }
-      #Identify_IP(read.table(inFile$datapath))
-      list(tble = c(1:20), txt = c(1:10), plt = rnorm(100))
-    })
-    
-    observeEvent(input$btn,{
-      output$what <- renderTable({
-        dataOP()$tble
-      })
-    })
-    
-    observeEvent(input$btn1,{
-      output$pl <- renderPlot({
-        plot(dataOP()$plt)
-      })
-    })              
-  }
+server <- function(input, output){
+  output$secondSelection <- renderUI({
+    selectInput(
+      inputId = "tableName", label = "Data:",
+      selected = NULL, multiple = FALSE,
+      choices = c("choose", SAMPLE$samples)
+    )})
+}
 
 
 shinyApp(ui, server)
