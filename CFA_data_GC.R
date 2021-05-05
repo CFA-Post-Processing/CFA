@@ -1108,3 +1108,8 @@ rm(BAG1_abakus,BAG1_cond,BAG1_flow,BAG1_flowstat,BAG1_IceHeight,BAG1_MeltSpeed,
    BAG1_MeltStat,BAG2_abakus,BAG2_cond,BAG2_flow,BAG2_flowstat,BAG2_IceHeight,
    BAG2_MeltSpeed,BAG2_MeltStat,Cond_NormSmooth_peakArea,Cond_NormSmooth_peaks,
    DELAYS,log_datalist,peak_heights,renamebag1,renamebag2)
+
+samples <- list(BAG1,BAG2)
+samplename <- c("BAG1","BAG2")
+samples <- setNames(samples,samplename)
+rm(BAG1,BAG2,samplename)
