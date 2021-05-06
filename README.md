@@ -32,3 +32,8 @@ Si crea infine una tabella riassuntiva delle velocità di fusione, con media, st
 Si creano due df per i dati di flusso (BAG1, BAG2). Si mediano i dati al secondo, si plottano i grafici di flusso per ciascuna bag e si elimina il rumore di fondo smoothando i dati e plottando il risultato sui grafici precendentemente ottenuti. Si crea infine una tabella riassuntiva dei flussi, con media, stdev e rsd%. 
 
 Si riordinano i dati in un'unica lista "SAMPLE", contenente due liste "BAG1", "BAG2", all'interno delle quali sono riportati i dataframes ottenuti. 
+
+
+#app.R 
+
+Traduzione dello script .R con shiny. Idea di base: consentire all'utente la selezione di una delle due BAG, limitando quindi la scelta successiva del dato da visualizzare. Visualizzazione di plot interattivi e tabelle (summary). WIP...
