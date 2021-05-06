@@ -11,7 +11,7 @@
 rm(list = ls()) 
 
 library(ampd)        #An Algorithm for Automatic Peak Detection in Noisy Periodic and
-                      #Quasi-Periodic Signals
+#Quasi-Periodic Signals
 library(zoo)
 library(Bolstad2)
 library(changepoint)
@@ -23,6 +23,7 @@ library(plyr)
 library(readr)
 library(dplyr) #necessary to create vector of data frame names from a list of data frames
 library(purrr) #necessary to create vector of data frame names from a list of data frames
+library(xlsx)
 
 #set main wd
 setwd("C:/Users/azzur/Dropbox/Il mio PC (LAPTOP-AUDRMQN9)/Desktop/CFA_data/CFA_HPLC")
@@ -169,26 +170,26 @@ rm(abakus_df_130504, abakus_df_134809, abakus_df_142819, file_130504, file_13480
    file_134809_second, file_142819, start_time1, start_time2, start_time3)
 
 conductivity_sample <- conductivity_datalist[names(conductivity_datalist) %in% c("2021-04-14_130504", 
-                                                                           "2021-04-14_134809",
-                                                                           "2021-04-14_142819")]
+                                                                                 "2021-04-14_134809",
+                                                                                 "2021-04-14_142819")]
 estens_sample <- drawwire_datalist[names(drawwire_datalist) %in% c("2021-04-14_130504", 
-                                                                       "2021-04-14_134809",
-                                                                       "2021-04-14_142819")]
+                                                                   "2021-04-14_134809",
+                                                                   "2021-04-14_142819")]
 flow_sample <- flowmeter_datalist[names(flowmeter_datalist) %in% c("2021-04-14_130504", 
-                                                                  "2021-04-14_134809",
-                                                                  "2021-04-14_142819")]
+                                                                   "2021-04-14_134809",
+                                                                   "2021-04-14_142819")]
 
 #CONDUCTIVITY, DRAWWIRE AND FLOWMETER DATA: apply the strp time function 
 
 conductivity_sample <-lapply(conductivity_sample, transform, 
-                            `Time_%H:%M:%S` = as.POSIXct(strptime(`Time_%H:%M:%S`, 
-                             "%H:%M:%S")))
+                             `Time_%H:%M:%S` = as.POSIXct(strptime(`Time_%H:%M:%S`, 
+                                                                   "%H:%M:%S")))
 estens_sample <-lapply(estens_sample, transform, 
-                             `Time_%H:%M:%S` = as.POSIXct(strptime(`Time_%H:%M:%S`, 
-                                                                   "%H:%M:%S")))
+                       `Time_%H:%M:%S` = as.POSIXct(strptime(`Time_%H:%M:%S`, 
+                                                             "%H:%M:%S")))
 flow_sample <-lapply(flow_sample, transform, 
-                             `Time_%H:%M:%S` = as.POSIXct(strptime(`Time_%H:%M:%S`, 
-                                                                   "%H:%M:%S")))
+                     `Time_%H:%M:%S` = as.POSIXct(strptime(`Time_%H:%M:%S`, 
+                                                           "%H:%M:%S")))
 
 #The "datalists" contain all the data, but we need to manage only a subset of files
 rm(abakus_datalist, conductivity_datalist, drawwire_datalist, flowmeter_datalist)
@@ -224,6 +225,9 @@ BAG1_distr <- colSums(BAG1_abakus[BAG1_start_row_index:BAG1_last_row_index,BAG1_
 size_classes <- c(0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.9,3.2,
                   3.5,3.9,4.3,4.8,5.3,5.8,6.4,7.1,7.8,8.6,9.5,10.5,11.6,12.8,
                   14.1,15.5,80.0)
+attach(mtcars)
+par(mfrow=c(2,2))
+
 barplot(BAG1_distr,
         names.arg = size_classes,
         space = 0,
@@ -239,9 +243,9 @@ BAG1_cumDistr <- cumsum(BAG1_counts)
 
 #Display cumulative distribution 
 plot(BAG1_cumDistr, type= "l", col="blue",
-        main = "BAG1_Cumulative distribution",
-        ylab = "Counts",
-        xlab = "Channels")
+     main = "BAG1_Cumulative distribution",
+     ylab = "Counts",
+     xlab = "Channels")
 
 #Compute differential distribution weighted by volume
 B1_counts <- apply(BAG1_abakus[3:ncol(BAG1_abakus)],2,sum)
@@ -253,77 +257,73 @@ for (i in seq(1,length(size_classes)-1)) {
 
 BAG1_diffDistr_Vol <- (4/3*pi*(vec_diameters_corr/2)^3)*diff(BAG1_cumDistr)/(diff(log(size_classes)))
 
-par(mfrow=c(2,1))
-par(mar=c(4,4.5,2.5,4))
 barplot(BAG1_diffDistr_Vol, col=rgb(1, 0, 0, .5),
-     main = "BAG1_Differential distribution (Vol)",
-     ylab = "dV/dlog(d)",
-     xlab = expression(paste("Diameter (", mu, "m)")))
-     box()
-     
+        main = "BAG1_Differential distribution (Vol)",
+        ylab = "dV/dlog(d)",
+        xlab = expression(paste("Diameter (", mu, "m)")))
+box()
+
 #Compute differential distribution (Counts)
 BAG1_CountsDiffDistr <-  diff(BAG1_cumDistr)/diff(log(size_classes))
 barplot(BAG1_CountsDiffDistr, col=rgb(0, 1, 0, .5),
-     main = "BAG1_Differential distribution (Counts)",
-     ylab = "dN/dlog(d)",
-     xlab = expression(paste("Diameter (", mu, "m)")))
-     box()
+        main = "BAG1_Differential distribution (Counts)",
+        ylab = "dN/dlog(d)",
+        xlab = expression(paste("Diameter (", mu, "m)")))
+box()
 
 #BAG2--------------------------------------------------------------------------
 #Tot counts per channel
 BAG2_distr <- colSums(BAG2_abakus[BAG2_start_row_index:BAG2_last_row_index,BAG2_start_column_index:BAG2_last_column_index])
 #Define size classes
 size_classes <- c(0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.9,3.2,
-                       3.5,3.9,4.3,4.8,5.3,5.8,6.4,7.1,7.8,8.6,9.5,10.5,11.6,12.8,
-                       14.1,15.5,80.0)
-par(mfrow=c(1,1))
+                  3.5,3.9,4.3,4.8,5.3,5.8,6.4,7.1,7.8,8.6,9.5,10.5,11.6,12.8,
+                  14.1,15.5,80.0)
+attach(mtcars)
+par(mfrow=c(2,2))
 barplot(BAG2_distr,
-  names.arg = size_classes,
-  space = 0,
-  border = NA,
-  main = "BAG2_Tot counts per channel",
-  ylab = "Counts",
-  xlab = expression(paste("Diameter (", mu, "m)")))
-     
+        names.arg = size_classes,
+        space = 0,
+        border = NA,
+        main = "BAG2_Tot counts per channel",
+        ylab = "Counts",
+        xlab = expression(paste("Diameter (", mu, "m)")))
+
 #Compute cumulative distribution
 BAG2_abakus <- BAG2_abakus[1:(length(BAG2_abakus)-1)]
 BAG2_counts <- apply(BAG2_abakus[3:ncol(BAG2_abakus)],2,sum)
 BAG2_cumDistr <- cumsum(BAG2_counts)
-     
+
 #Display cumulative distribution 
 plot(BAG2_cumDistr, type= "l", col="blue",
-main = "BAG2_Cumulative distribution",
-ylab = "Counts",
-xlab = "Channels")
-     
+     main = "BAG2_Cumulative distribution",
+     ylab = "Counts",
+     xlab = "Channels")
+
 #Compute differential distribution weighted by volume
 B2_counts <- apply(BAG2_abakus[3:ncol(BAG2_abakus)],2,sum)
 vec_diameters_corr <- c(rep(0,31))
-     
+
 for (i in seq(1,length(size_classes)-1)) {
- vec_diameters_corr[i] <- mean(c(size_classes[i],size_classes[i+1])) 
- }
-     
+  vec_diameters_corr[i] <- mean(c(size_classes[i],size_classes[i+1])) 
+}
+
 BAG2_diffDistr_Vol <- (4/3*pi*(vec_diameters_corr/2)^3)*diff(BAG2_cumDistr)/(diff(log(size_classes)))
-     
-par(mfrow=c(2,1))
-par(mar=c(4,4.5,2.5,4))
+
 barplot(BAG2_diffDistr_Vol, col=rgb(1, 0, 0, .8),
-  main = "BAG2_Differential distribution (Vol)",
-  ylab = "dV/dlog(d)",
-  xlab = expression(paste("Diameter (", mu, "m)")))
-  box()
-     
+        main = "BAG2_Differential distribution (Vol)",
+        ylab = "dV/dlog(d)",
+        xlab = expression(paste("Diameter (", mu, "m)")))
+box()
+
 #Compute differential distribution (Counts)
 BAG2_CountsDiffDistr <-  diff(BAG2_cumDistr)/diff(log(size_classes))
 barplot(BAG2_CountsDiffDistr, col=rgb(0, 1, 0, .8),
- main = "BAG2_Differential distribution (Counts)",
- ylab = "dN/dlog(d)",
- xlab = expression(paste("Diameter (", mu, "m)")))
+        main = "BAG2_Differential distribution (Counts)",
+        ylab = "dN/dlog(d)",
+        xlab = expression(paste("Diameter (", mu, "m)")))
 box()
-
-par(mfrow=c(1,1))
 #--------------------PLOTS_COMPARISON-------------------------------------------
+par(mfrow=c(1,1))
 #Define a function for scientific notation 
 sciNotation <- function(x, digits = 1) {
   if (length(x) > 1) {
@@ -345,22 +345,22 @@ plot(BAG1_cumDistr, type= "l", col="blue",
 par(new=TRUE)
 plot(BAG2_cumDistr, type= "l", col="green",
      axes = FALSE, xlab = "", ylab = "")
-     axis(4, at = axTicks(4), label = sciNotation(axTicks(4), 4))
-     legend("bottomright", inset= .02, legend=c("BAG1", "BAG2"),
-     col=c("blue","green"), lty=1:1, lwd=2, cex=0.8)
-     
+axis(4, at = axTicks(4), label = sciNotation(axTicks(4), 4))
+legend("bottomright", inset= .02, legend=c("BAG1", "BAG2"),
+       col=c("blue","green"), lty=1:1, lwd=2, cex=0.8)
+
 #DIFFERENTIAL DISTRIBUTIONS(Vol)
 plot(BAG1_diffDistr_Vol, type="l", col="blue",
-        main = "Differential distribution (Vol)",
-        ylab = "dV/dlog(d)",
-        xlab = "Channels")
+     main = "Differential distribution (Vol)",
+     ylab = "dV/dlog(d)",
+     xlab = "Channels")
 par(new=TRUE)
 plot(BAG2_diffDistr_Vol, type="l", col="green",
-        axes = FALSE, xlab = "", ylab = "")
-        axis(side = 4, at = pretty(range(BAG2_diffDistr_Vol)))     
-        legend("topleft", inset= .02, legend=c("BAG1", "BAG2"),
-        col=c("blue","green"), lty=1:1, lwd=2, cex=0.8)
-        
+     axes = FALSE, xlab = "", ylab = "")
+axis(side = 4, at = pretty(range(BAG2_diffDistr_Vol)))     
+legend("topleft", inset= .02, legend=c("BAG1", "BAG2"),
+       col=c("blue","green"), lty=1:1, lwd=2, cex=0.8)
+
 #DIFFERENTIAL DISTRIBUTIONS(Counts)
 plot(BAG1_CountsDiffDistr, type="l", col="blue",
      main = "Differential distribution (Counts)",
@@ -369,10 +369,10 @@ plot(BAG1_CountsDiffDistr, type="l", col="blue",
 par(new=TRUE)
 plot(BAG2_CountsDiffDistr, type="l", col="green",
      axes = FALSE, xlab = "", ylab = "")
-     axis(4, at = axTicks(4), label = sciNotation(axTicks(4), 4))
-     #axis(side = 4, at = pretty(range(BAG2_CountsDiffDistr)))     
-     legend("topright", inset= .02, legend=c("BAG1", "BAG2"),
-     col=c("blue","green"), lty=1:1, lwd=2, cex=0.8)
+axis(4, at = axTicks(4), label = sciNotation(axTicks(4), 4))
+#axis(side = 4, at = pretty(range(BAG2_CountsDiffDistr)))     
+legend("topright", inset= .02, legend=c("BAG1", "BAG2"),
+       col=c("blue","green"), lty=1:1, lwd=2, cex=0.8)
 
 rm(B1_counts, B2_counts,BAG1_counts, BAG1_CountsDiffDistr, BAG1_cumDistr, 
    BAG1_diffDistr_Vol, BAG1_distr, BAG1_last_column_index, BAG1_last_row_index, 
@@ -380,7 +380,7 @@ rm(B1_counts, B2_counts,BAG1_counts, BAG1_CountsDiffDistr, BAG1_cumDistr,
    BAG2_distr,BAG2_CountsDiffDistr, BAG2_diffDistr_Vol, BAG2_last_column_index, 
    BAG2_last_row_index, BAG2_start_column_index,BAG2_start_row_index, i, 
    size_classes, vec_diameters_corr)        
-        
+
 #-------------------------------------------------------------------------------
 #CONDUCTIVITY DATA: ~1 acq. per sec
 #-------------------------------------------------------------------------------
@@ -400,7 +400,7 @@ file_134809_second <- cond_df_134809[-c(1:913), ]
 bag1_files <- list(file_130504,file_134809_first)
 BAG1_cond <- do.call("rbind", bag1_files)
 rm(bag1_files)
-     
+
 #BAG2: 134809 (second) + 142819 (all!) df subset
 bag2_files <- list(file_134809_second, cond_df_142819)
 BAG2_cond <- do.call("rbind", bag2_files)
@@ -528,8 +528,8 @@ plot(bag2_s1_norm$Index, bag2_s1_norm$bag2_s1_norm, type = 'l', lty=1, ylim = c(
 lines(bag2_s2_norm$Index, bag2_s2_norm$bag2_s2_norm, type = 'l', lty=1, col="tomato", lwd=3)
 lines(bag2_s4_norm$Index, bag2_s4_norm$bag2_s4_norm, type = 'l', lty=1, col="deepskyblue", lwd=3)
 legend("topleft", legend=c("SMOOTHED_Sensor1: start", 
-                                             "SMOOTHED_Sensor2: HPLC",
-                                             "SMOOTHED_Sensor4: FC_dust"),
+                           "SMOOTHED_Sensor2: HPLC",
+                           "SMOOTHED_Sensor4: FC_dust"),
        col=c("gray","tomato","deepskyblue"), 
        lty=1, lwd=3, bty = "n", cex=0.6)
 
@@ -768,7 +768,7 @@ delay_hplc_stdev <- sd(delay_hplc)
 delay_fc_stdev <- sd(delay_fc)
 delay_hplc_rsd <- (delay_hplc_stdev/delay_hplc_mean)*100
 delay_fc_rsd <- (delay_fc_stdev/delay_fc_mean)*100
-  
+
 DELAYS_HPLC <- c(delay_hplc_mean,delay_hplc_stdev,delay_hplc_rsd)
 DELAYS_FC <- c(delay_fc_mean,delay_fc_stdev,delay_fc_rsd)
 DELAYS <- as.data.frame(cbind(DELAYS_HPLC,DELAYS_FC))
@@ -913,17 +913,6 @@ rm(DW_df_130504,DW_df_134809,DW_df_142819,colname1,colname2, Time_130504,Time_13
    file134809_MeanMeltSPEED,file142819_MeanIceHEIGHT,file142819_MeanMeltSPEED,
    MS_134809_first,MS_134809_second, MIH_134809_first, MIH_134809_second, estens_sample)
 
-#ICE HEIGHTS--------------------------------------------------------------------
-#BAG1 plot
-plot(BAG1_IceHeight$`mean Ice Height (mm)`~BAG1_IceHeight$index, type="l",
-     main="BAG1:Ice Height(mm)",
-     ylab="Ice Height (mm)", xlab="Time (sec)")
-#BAG2 plot
-plot(BAG2_IceHeight$`mean Ice Height (mm)`~BAG2_IceHeight$index, type="l",
-     main="BAG2:Ice Height(mm)",
-     ylab="Ice Height (mm)", xlab="Time (sec)")
-
-#MELT SPEED: spikes and plots---------------------------------------------------
 #REMOVE SPIKES with filter 
 #first, identify the outliers and save them in a vector
 outliers_bag1 <- boxplot(BAG1_MeltSpeed$MeltSpeed_cm.min, plot=FALSE)$out
@@ -940,14 +929,24 @@ x <- x[-which(x$MeltSpeed_cm.min %in% outliers_bag1),]
 y <- BAG2_MeltSpeed
 y <- y[-which(y$MeltSpeed_cm.min %in% outliers_bag2),]
 
+#PLOTS--------------------------------------------------------------------
 #BAG1 plot
+attach(mtcars)
+par(mfrow=c(2,1))
 plot(x$MeltSpeed_cm.min ~ x$index, type="l",
      main="BAG1:Melt Speed (cm/min)", 
      ylab="Melt Speed (cm/min)", xlab="Time (sec)")
+plot(BAG1_IceHeight$`mean Ice Height (mm)`~BAG1_IceHeight$index, type="l",
+     main="BAG1:Ice Height(mm)",
+     ylab="Ice Height (mm)", xlab="Time (sec)")
+
 #BAG2 plot
 plot(y$MeltSpeed_cm.min ~ y$index, type="l",
      main="BAG2:Melt Speed (cm/min)",
      ylab="Melt Speed (cm/min)", xlab="Time (sec)")
+plot(BAG2_IceHeight$`mean Ice Height (mm)`~BAG2_IceHeight$index, type="l",
+     main="BAG2:Ice Height(mm)",
+     ylab="Ice Height (mm)", xlab="Time (sec)")
 
 #BAG1 STATS (cm/min)
 x <- as.array(x$MeltSpeed_cm.min)
@@ -1051,7 +1050,8 @@ x2 <- BAG2_flow$index
 BAG1_flow1 <- loess(flow1 ~ x1, span=tmp.span)$fitted
 BAG2_flow2 <- loess(flow2 ~ x2, span=tmp.span)$fitted
 #-------------------------------------------------------------------------------
-#PLOTS 
+#PLOTS
+par(mfrow=c(1,1))
 #BAG1
 plot(BAG1_flow$`flow (ul/min)` ~ BAG1_flow$index , ylim = c(-2500,3000), 
      type="l", main="BAG1: flow rate (ul/min)", xlab="Time(sec)", ylab="Flow rate (ul/min)")
@@ -1089,7 +1089,7 @@ BAG2_flowstat <- setNames(BAG2_flowstat, flownames)
 rm(BAG1_flow1,BAG2_flow2,colname1,flow1,flow2,flownames, 
    Mean_flow1,Mean_flow2,rsd_flow1,rsd_flow2,stDev_flow1,stDev_flow2,Time_130504,
    Time_134809,Time_142819,tmp.span,v,x1,x2, flow_bag1,flow_bag2)
-                                              
+
 #group data 
 #BAG1----------------------------------------------------------------------------
 BAG1 <- list(BAG1_abakus,BAG1_cond,BAG1_flow,BAG1_flowstat,BAG1_IceHeight,BAG1_MeltSpeed,
@@ -1099,7 +1099,7 @@ renamebag1 <- c("dust","conductivity","flow","flow statistics","Ice Height","Mel
 BAG1 <- setNames(BAG1, renamebag1)
 #BAG2---------------------------------------------------------------------------
 BAG2 <- list(BAG2_abakus,BAG2_cond,BAG2_flow,BAG2_flowstat,BAG2_IceHeight,BAG2_MeltSpeed,
-                                BAG2_MeltStat,Cond_NormSmooth_peakArea,Cond_NormSmooth_peaks,DELAYS)
+             BAG2_MeltStat,Cond_NormSmooth_peakArea,Cond_NormSmooth_peaks,DELAYS)
 renamebag2 <- c("dust","conductivity","flow","flow statistics","Ice Height","Melt speed",
                 "Melt statitics","Peaks:Area","Peaks","Conductivity Sensors:delays")
 BAG2 <- setNames(BAG2, renamebag2)
@@ -1110,7 +1110,6 @@ samplename <- c("BAG1","BAG2")
 samples <- setNames(samples,samplename)
 rm(samplename, BAG1,BAG2)
 
-#CREATE A UNIQUE FINAL LIST 
 SAMPLE <- list(samples)
 SAMPLEN <- c("samples")
 SAMPLE <- setNames(SAMPLE,SAMPLEN)
