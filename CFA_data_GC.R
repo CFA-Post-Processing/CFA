@@ -1105,53 +1105,15 @@ renamebag2 <- c("dust","conductivity","flow","flow statistics","Ice Height","Mel
 BAG2 <- setNames(BAG2, renamebag2)
 
 
-# samples <- list(BAG1,BAG2)
-# samplename <- c("BAG1","BAG2")
-# samples <- setNames(samples,samplename)
-# rm(samplename)
+samples <- list(BAG1,BAG2)
+samplename <- c("BAG1","BAG2")
+samples <- setNames(samples,samplename)
+rm(samplename, BAG1,BAG2)
 
-#EXPORT DATA AS .XLSX FILES-----------------------------------------------------
-# setwd("C:/Users/azzur/Dropbox/Il mio PC (LAPTOP-AUDRMQN9)/Desktop/CFA_data/excel_data")
-# 
-# write.xlsx(BAG1_abakus, file="BAG1_abakus.xlsx", sheetName = "BAG1_abakus", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(BAG1_cond, file="BAG1_cond.xlsx", sheetName = "BAG1_cond", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(BAG1_flow, file="BAG1_flow.xlsx", sheetName = "BAG1_flow", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(BAG1_flowstat, file="BAG1_flowstat.xlsx", sheetName = "BAG1_flowstat", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(BAG1_IceHeight, file="BAG1_IceHeight.xlsx", sheetName = "BAG1_IceHeight", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(BAG1_MeltSpeed, file="BAG1_MeltSpeed.xlsx", sheetName = "BAG1_MeltSpeed", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(BAG1_MeltStat, file="BAG1_MeltStat.xlsx", sheetName = "BAG1_MeltStat", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# 
-# write.xlsx(BAG2_abakus, file="BAG2_abakus.xlsx", sheetName = "BAG2_abakus", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(BAG2_cond, file="BAG2_cond.xlsx", sheetName = "BAG2_cond", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(BAG2_flow, file="BAG2_flow.xlsx", sheetName = "BAG2_flow", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(BAG2_flowstat, file="BAG2_flowstat.xlsx", sheetName = "BAG2_flowstat", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(BAG2_IceHeight, file="BAG2_IceHeight.xlsx", sheetName = "BAG2_IceHeight", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(BAG2_MeltSpeed, file="BAG2_MeltSpeed.xlsx", sheetName = "BAG2_MeltSpeed", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(BAG2_MeltStat, file="BAG2_MeltStat.xlsx", sheetName = "BAG2_MeltStat", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(Cond_NormSmooth_peakArea, file="BAG2_PeaksArea.xlsx", sheetName = "BAG2_PeaksArea", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(Cond_NormSmooth_peaks, file="BAG2_Peaks.xlsx", sheetName = "BAG2_Peaks", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(peak_heights, file="BAG2_PeaksHeight.xlsx", sheetName = "BAG2_PeaksHeight", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
-# write.xlsx(DELAYS, file="BAG2_Delays.xlsx", sheetName = "BAG2_Delays", 
-#            col.names = TRUE, row.names = TRUE, append = FALSE)
+#CREATE A UNIQUE FINAL LIST 
+SAMPLE <- list(samples)
+SAMPLEN <- c("samples")
+SAMPLE <- setNames(SAMPLE,SAMPLEN)
+rm(SAMPLEN)
 
-rm(BAG1_abakus,BAG1_cond,BAG1_flow,BAG1_flowstat,BAG1_IceHeight,BAG1_MeltSpeed,BAG1_MeltStat,
-   BAG2_abakus,BAG2_cond,BAG2_flow,BAG2_flowstat,BAG2_IceHeight,BAG2_MeltSpeed,BAG2_MeltStat,
-   Cond_NormSmooth_peakArea,Cond_NormSmooth_peaks,DELAYS,log_datalist,peak_heights,
-    file,renamebag1,renamebag2)
+rm(log_datalist,file,renamebag1,renamebag2,samples)
