@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------------------------
-# Program name: abakus_tests
+# Program name: CFA_data_GC.R
 # Authors: Azzurra Spagnesi
 # Date: April 2021
 # Objective: Import data for abakus, conductivity, draw wire and flowmeter from 
